@@ -1,8 +1,8 @@
 <?php
 session_start();
 
-if (!isset($_SESSION["user_id"]) && $_SESSION["role"] !== 1) {
-    header("Location: ../index.php");
+if (!isset($_SESSION["user_id"]) || $_SESSION["role"] == 0) {
+    header("Location: ../index.php"); // Redirect to home or login
     exit();
 }
 
@@ -165,7 +165,7 @@ $result = $con->query($sql);
                 <div class="container-fluid">
 
                     <div class="d-sm-flex align-items-center justify-content-between mb-4 position-relative">
-                        <h1 class="h3 mb-0 text-gray-800">Reservations</h1>
+                        <h1 class="h3 mb-0 text-gray-800">Users</h1>
 
                     </div>
 
@@ -183,7 +183,6 @@ $result = $con->query($sql);
                         <th>Name</th>
                         <th>Number</th>
                         <th>Email</th>
-                        <th>Number of People</th>
                         <th>Province</th>
                         <th>City/Municipality</th>
                         <th>Barangay</th>
@@ -202,11 +201,6 @@ $result = $con->query($sql);
                             echo "<td>" . htmlspecialchars($row['city']) . "</td>";
                             echo "<td>". htmlspecialchars($row['barangay']) . "</td>"; // Replace with actual price column
                             echo "<td>". htmlspecialchars($row['street']) . "</td>"; // Replace with actual status column
-                            echo "<td class='d-flex'>
-                                    <button class='btn btn-success btn-sm mr-2'>View</button>
-                                    <button class='btn btn-info btn-sm mr-2'>Cancel</button>
-                                    <button class='btn btn-danger btn-sm'>Delete</button>
-                                  </td>";
                             echo "</tr>";
                         }
                     } else {

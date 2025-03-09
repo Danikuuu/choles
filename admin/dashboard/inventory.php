@@ -1,8 +1,8 @@
 <?php
 session_start();
 
-if (!isset($_SESSION["user_id"])) {
-    header("Location: ../index.php");
+if (!isset($_SESSION["user_id"]) || $_SESSION["role"] == 0) {
+    header("Location: ../index.php"); // Redirect to home or login
     exit();
 }
 
@@ -86,7 +86,7 @@ $result = $con->query($sql);
                     <span>Reservations</span></a>
             </li>
 
-            <!-- Anomyties -->
+            <!-- Anomyties -->  
             <li class="nav-item active">
                 <a class="nav-link" href="./inventory.php">
                     <i class="fas fa-fw fa-chart-area"></i>
@@ -182,8 +182,6 @@ $result = $con->query($sql);
                             <button class="btn btn-primary" data-toggle="modal" data-target="#addMenuModal">
                                 <i class="fas fa-plus"></i> Add Item
                             </button>
-
-                            <button class="btn btn-success"><i class="fas fa-archive"></i> Archive</button>
                         </div>
                     </div>
 
@@ -221,6 +219,7 @@ $result = $con->query($sql);
                     </div>
                 </div>
  
+                <!-- Display Menu Items -->
                 <div class="row justify-content-center align-items-center p-5">
                     <?php if ($result->num_rows > 0): ?>
                         <?php while ($row = $result->fetch_assoc()): ?>
@@ -239,11 +238,20 @@ $result = $con->query($sql);
                                                     <?php echo htmlspecialchars($row['unit']); ?>
                                                 </span>
                                             </div>
-                                            
+
                                             <div>
-                                                <button class="btn btn-success">Edit</button>
-                                    
-                                                <button class="btn btn-success">Archive</button>
+                                                <button class="btn btn-success btn-sm edit-btn"
+                                                    data-id="<?php echo htmlspecialchars($row['id']); ?>"
+                                                    data-name="<?php echo htmlspecialchars($row['item_name']); ?>"
+                                                    data-quantity="<?php echo htmlspecialchars($row['quantity']); ?>"
+                                                    data-unit="<?php echo htmlspecialchars($row['unit']); ?>"
+                                                    data-toggle="modal"
+                                                    data-target="#editModal">Edit</button>
+
+                                                <form method="POST" action="delete_inventory_item.php" style="display:inline;">
+                                                    <input type="hidden" name="inventoryId" value="<?= htmlspecialchars($row['id']); ?>">
+                                                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                                </form>
                                             </div>
                                         </div>
                                     </div>
@@ -256,6 +264,43 @@ $result = $con->query($sql);
                         </div>
                     <?php endif; ?>
                 </div>
+
+                <!-- Modal for Editing -->
+                <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="editModalLabel">Edit Menu Item</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <form action="update_inventory.php" enctype="multipart/form-data" method="POST">
+                                    <input type="hidden" name="id" id="edit-id">
+
+                                    <div class="form-group">
+                                        <label for="edit-name">Item Name</label>
+                                        <input type="text" class="form-control" id="edit-name" name="item_name" required>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="edit-quantity">Quantity</label>
+                                        <input type="number" class="form-control" id="edit-quantity" name="quantity" required>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="edit-unit">Unit</label>
+                                        <input type="text" class="form-control" id="edit-unit" name="unit" required>
+                                    </div>
+
+                                    <button type="submit" class="btn btn-primary">Update</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
 
             </div>
             
@@ -312,6 +357,19 @@ $result = $con->query($sql);
         }
     });
     </script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        document.querySelectorAll(".edit-btn").forEach(button => {
+            button.addEventListener("click", function() {
+                document.getElementById("edit-id").value = this.getAttribute("data-id");
+                document.getElementById("edit-name").value = this.getAttribute("data-name");
+                document.getElementById("edit-quantity").value = this.getAttribute("data-quantity");
+                document.getElementById("edit-unit").value = this.getAttribute("data-unit");
+            });
+        });
+    });
+</script>
 
 </body>
 

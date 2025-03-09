@@ -1,8 +1,8 @@
 <?php
 session_start();
 
-if (!isset($_SESSION["user_id"]) && $_SESSION["role"] !== 1) {
-    header("Location: ../index.php");
+if (!isset($_SESSION["user_id"]) || $_SESSION["role"] == 0) {
+    header("Location: ../index.php"); // Redirect to home or login
     exit();
 }
 
@@ -184,7 +184,6 @@ $result = $con->query($sql);
                                 <i class="fas fa-plus"></i> Add Package
                             </button>
 
-                            <button class="btn btn-success"><i class="fas fa-archive"></i> Archive</button>
                         </div>
                     </div>
 
@@ -234,7 +233,8 @@ $result = $con->query($sql);
 
                                     <!-- Description -->
                                     <div class="form-group">
-                                        <select name="packagestyling" id="packagestyling">
+                                        <label for="packagestyling">Venue Styling</label></label>
+                                        <select name="packagestyling" class="form-control" id="packagestyling">
                                             <option value="1">Yes</option>
                                             <option value="0">No</option>
                                         </select>
@@ -319,15 +319,15 @@ $result = $con->query($sql);
                                                 </span>
 
                                                 <span class="badge badge-danger">
-                                                    <i class="fas fa-paint-brush"></i> <?php echo htmlspecialchars($row['menu_count']); ?>
+                                                    <i class="fas fa-paint-brush"></i> <?php echo htmlspecialchars($row['venue_styling']); ?>
                                                 </span>
 
                                                 <span class="badge badge-info">
-                                                    <i class="fas fa-table"></i> <?php echo htmlspecialchars($row['menu_count']); ?>
+                                                    <i class="fas fa-table"></i> <?php echo htmlspecialchars($row['table_count']); ?>
                                                 </span>
 
                                                 <span class="badge badge-primary">
-                                                    <i class="fas fa-chair"></i> <?php echo htmlspecialchars($row['menu_count']); ?>
+                                                    <i class="fas fa-chair"></i> <?php echo htmlspecialchars($row['chair_count']); ?>
                                                 </span>
                                             </div>
 
@@ -335,9 +335,25 @@ $result = $con->query($sql);
                                                 <img src="<?php echo htmlspecialchars($row['image']); ?>" alt="Menu Image" style="width: 150px; height: 100px; object-fit: cover;">
                                             </div>
                                             <div>
-                                                <button class="btn btn-success">Edit</button>
-                                    
-                                                <button class="btn btn-success">Archive</button>
+                                            <button class="btn btn-success edit-btn btn-sm"
+                                                data-id="<?php echo htmlspecialchars($row['id']); ?>"
+                                                data-name="<?php echo isset($row['package_name']) ? htmlspecialchars($row['package_name']) : ''; ?>"
+                                                data-price="<?php echo isset($row['package_price']) ? htmlspecialchars($row['package_price']) : ''; ?>"
+                                                data-people="<?php echo isset($row['people_count']) ? htmlspecialchars($row['people_count']) : ''; ?>"
+                                                data-menu="<?php echo isset($row['menu_count']) ? htmlspecialchars($row['menu_count']) : ''; ?>"
+                                                data-venue-styling="<?php echo isset($row['venue_styling']) ? htmlspecialchars($row['venue_styling']) : ''; ?>"
+                                                data-table="<?php echo isset($row['table_count']) ? htmlspecialchars($row['table_count']) : ''; ?>"
+                                                data-chair="<?php echo isset($row['chair_count']) ? htmlspecialchars($row['chair_count']) : ''; ?>"
+                                                data-venue="<?php echo isset($row['venue']) ? htmlspecialchars($row['venue']) : ''; ?>"
+                                                data-image="<?php echo isset($row['image']) ? htmlspecialchars($row['image']) : ''; ?>">
+                                                Edit
+                                            </button>
+
+                                            <form method="POST" action="delete_package.php" style="display:inline;">
+                                                <input type="hidden" name="packageId" value="<?= htmlspecialchars($row['id']); ?>">
+                                                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                            </form>
+
                                             </div>
                                         </div>
                                     </div>
@@ -350,6 +366,70 @@ $result = $con->query($sql);
                         </div>
                     <?php endif; ?>
                 </div>
+                <!-- Edit Modal -->
+<div class="modal fade" id="editMenuModal" tabindex="-1" aria-labelledby="editMenuModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editMenuModalLabel">Edit Package</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="editMenuForm" enctype="multipart/form-data" action="./edit_package.php" method="post">
+                    <input type="hidden" id="packageId" name="packageId">
+                    
+                    <div class="form-group">
+                        <label for="packageName">Package Name</label>
+                        <input type="text" class="form-control" id="packageName" name="packageName">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="packagePrice">Price</label>
+                        <input type="text" class="form-control" id="packagePrice" name="packagePrice">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="peopleCount">People Count</label>
+                        <input type="number" class="form-control" id="peopleCount" name="peopleCount">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="menuCount">Menu Count</label>
+                        <input type="number" class="form-control" id="menuCount" name="menuCount">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="venueStyling">Venue Styling</label>
+                        <input type="text" class="form-control" id="venueStyling" name="venueStyling">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="tableCount">Table Count</label>
+                        <input type="number" class="form-control" id="tableCount" name="tableCount">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="chairCount">Chair Count</label>
+                        <input type="number" class="form-control" id="chairCount" name="chairCount">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="venue">Venue</label>
+                        <input type="text" class="form-control" id="venue" name="venue">
+                    </div>
+
+                    <div class="form-group text-center">
+                        <img id="previewImage" src="" alt="Package Image" style="width: 100px; height: 100px; object-fit: cover;">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 
             </div>
             
@@ -406,6 +486,48 @@ $result = $con->query($sql);
         }
     });
     </script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+    $(document).ready(function () {
+        $(".edit-btn").click(function () {
+            // Get data attributes
+            let packageId = $(this).data("id");
+            let packageName = $(this).data("name");
+            let packagePrice = $(this).data("price");
+            let peopleCount = $(this).data("people");
+            let menuCount = $(this).data("menu");
+            let venueStyling = $(this).data("venue-styling");
+            let tableCount = $(this).data("table");
+            let chairCount = $(this).data("chair");
+            let venue = $(this).data("venue");
+            let menuImage = $(this).data("image");
+
+            // Log values for debugging
+            console.log("Menu Name:", packageName);
+            console.log("Price:", packagePrice);
+
+            // Populate modal fields
+            $("#packageId").val(packageId);
+            $("#packageName").val(packageName);
+            $("#packagePrice").val(packagePrice);
+            $("#peopleCount").val(peopleCount);
+            $("#menuCount").val(menuCount);
+            $("#venueStyling").val(venueStyling);
+            $("#tableCount").val(tableCount);
+            $("#chairCount").val(chairCount);
+            $("#venue").val(venue);
+
+            // Set image preview
+            $("#previewImage").attr("src", menuImage);
+
+            // Show the modal
+            $("#editMenuModal").modal("show");
+        });
+    });
+</script>
+
+
+
 
 </body>
 

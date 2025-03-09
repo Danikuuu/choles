@@ -1,8 +1,8 @@
 <?php
 session_start();
 
-if (!isset($_SESSION["user_id"]) && $_SESSION["role"] !== 1) {
-    header("Location: ../index.php");
+if (!isset($_SESSION["user_id"]) || $_SESSION["role"] == 0) {
+    header("Location: ../index.php"); // Redirect to home or login
     exit();
 }
 
@@ -10,6 +10,7 @@ if (!isset($_SESSION["user_id"]) && $_SESSION["role"] !== 1) {
 require_once '../../data-handling/db/connection.php';
 
 $sql = "SELECT 
+            r.id AS reservation_id,
             cpm.id AS customer_package_id,
             CONCAT(c.fname, ' ', c.lname) AS customer_name,
             r.event_date,
@@ -184,7 +185,24 @@ $result = $con->query($sql);
 
                     <div class="d-sm-flex align-items-center justify-content-between mb-4 position-relative">
                         <h1 class="h3 mb-0 text-gray-800">Reservations</h1>
-
+                        <div class=" p-3" style="z-index: 11">
+                            <div id="toastMessage" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                                <div class="d-flex">
+                                    <div class="toast-body">
+                                        <?php
+                                        if (isset($_SESSION['success'])) {
+                                            echo $_SESSION['success'];
+                                            unset($_SESSION['success']); // Clear message after showing
+                                        } elseif (isset($_SESSION['error'])) {
+                                            echo $_SESSION['error'];
+                                            unset($_SESSION['error']); // Clear message after showing
+                                        }
+                                        ?>
+                                    </div>
+                                    <button type="button" class="btn me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"><i class="fas fa-times"></i></button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                 </div>
@@ -215,16 +233,40 @@ $result = $con->query($sql);
                             echo "<tr>";
                             echo "<td>" . htmlspecialchars($row['customer_name']) . "</td>";
                             echo "<td>" . htmlspecialchars($row['package_name']) . "</td>";
-                            echo "<td>". htmlspecialchars($row['venue']) . "</td>";
-                            echo "<td>" . htmlspecialchars($row['customer_name']) . "</td>"; // Replace with actual count column
+                            echo "<td>" . htmlspecialchars($row['venue']) . "</td>";
+                            echo "<td>" . htmlspecialchars($row['people_count']) . "</td>";
                             echo "<td>" . htmlspecialchars($row['event_date']) . "</td>";
-                            echo "<td>". htmlspecialchars($row['package_price']) . "</td>"; // Replace with actual price column
-                            echo "<td>". htmlspecialchars($row['status']) . "</td>"; // Replace with actual status column
+                            echo "<td>" . htmlspecialchars($row['package_price']) . "</td>";
+                            echo "<td>" . htmlspecialchars($row['status']) . "</td>";
                             echo "<td>
-                                    <button class='btn btn-success btn-sm'>View</button>
-                                    <button class='btn btn-info btn-sm'>Cancel</button>
-                                    <button class='btn btn-danger btn-sm'>Delete</button>
-                                  </td>";
+                                    <button class='btn btn-success btn-sm view-btn'
+                                        data-customer='" . htmlspecialchars($row['customer_name']) . "' 
+                                        data-package='" . htmlspecialchars($row['package_name']) . "' 
+                                        data-venue='" . htmlspecialchars($row['venue']) . "' 
+                                        data-event-date='" . htmlspecialchars($row['event_date']) . "' 
+                                        data-price='" . htmlspecialchars($row['package_price']) . "' 
+                                        data-status='" . htmlspecialchars($row['status']) . "'>
+                                        View
+                                    </button>
+
+                                    <form method='POST' action='update_status.php' style='display:inline;'>
+                                        <input type='hidden' name='reservationId' value='" . htmlspecialchars($row['reservation_id']) . "'>
+                                        <input type='hidden' name='status' value='approved'>
+                                        <button type='submit' class='btn btn-success btn-sm'>Approve</button>
+                                    </form>
+
+                                    <form method='POST' action='update_status.php' style='display:inline;'>
+                                        <input type='hidden' name='reservationId' value='" . htmlspecialchars($row['reservation_id']) . "'>
+                                        <input type='hidden' name='status' value='completed'>
+                                        <button type='submit' class='btn btn-success btn-sm'>Completed</button>
+                                    </form>
+
+                                    <form method='POST' action='update_status.php' style='display:inline;'>
+                                        <input type='hidden' name='reservationId' value='" . htmlspecialchars($row['reservation_id']) . "'>
+                                        <input type='hidden' name='status' value='cancelled'>
+                                        <button type='submit' class='btn btn-info btn-sm'>Cancel</button>
+                                    </form>
+                                </td>";
                             echo "</tr>";
                         }
                     } else {
@@ -232,11 +274,53 @@ $result = $con->query($sql);
                     }
                     ?>
                 </tbody>
+
             </table>
         </div>
     </div>
 </div>
-                    </div>
+            <!-- View Details Modal -->
+<div class="modal fade" id="viewModal" tabindex="-1" aria-labelledby="viewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewModalLabel">Booking Details</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <table class="table table-bordered">
+                    <tr>
+                        <th>Customer Name</th>
+                        <td id="modalCustomer"></td>
+                    </tr>
+                    <tr>
+                        <th>Package Name</th>
+                        <td id="modalPackage"></td>
+                    </tr>
+                    <tr>
+                        <th>Venue</th>
+                        <td id="modalVenue"></td>
+                    </tr>
+                    <tr>
+                        <th>Event Date</th>
+                        <td id="modalEventDate"></td>
+                    </tr>
+                    <tr>
+                        <th>Package Price</th>
+                        <td id="modalPrice"></td>
+                    </tr>
+                    <tr>
+                        <th>Status</th>
+                        <td id="modalStatus"></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+        </div>
                 </div>
 
             </div>
@@ -285,7 +369,33 @@ $result = $con->query($sql);
 
     <script src="js/sb-admin-2.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $(".view-btn").click(function () {
+            // Get data attributes from the button
+            let customer = $(this).data("customer");
+            let package = $(this).data("package");
+            let venue = $(this).data("venue");
+            let eventDate = $(this).data("event-date");
+            let price = $(this).data("price");
+            let status = $(this).data("status");
+
+            // Set modal content
+            $("#modalCustomer").text(customer);
+            $("#modalPackage").text(package);
+            $("#modalVenue").text(venue);
+            $("#modalEventDate").text(eventDate);
+            $("#modalPrice").text(price);
+            $("#modalStatus").text(status);
+
+            // Show modal
+            $("#viewModal").modal("show");
+        });
+    });
+</script>
+
+<script>
     document.addEventListener("DOMContentLoaded", function () {
         var toastEl = document.getElementById('toastMessage');
         if (toastEl && toastEl.textContent.trim() !== "") {

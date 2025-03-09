@@ -1,8 +1,8 @@
 <?php
 session_start();
 
-if (!isset($_SESSION["user_id"]) && $_SESSION["role"] !== 1) {
-    header("Location: ../index.php");
+if (!isset($_SESSION["user_id"]) || $_SESSION["role"] == 0) {
+    header("Location: ../index.php"); // Redirect to home or login
     exit();
 }
 
@@ -186,8 +186,6 @@ $category_result = $con->query($category);
                             <button class="btn btn-primary" data-toggle="modal" data-target="#addMenuModal">
                                 <i class="fas fa-plus"></i> Add Menu
                             </button>
-
-                            <button class="btn btn-success"><i class="fas fa-archive"></i> Archive</button>
                         </div>
                     </div>
 
@@ -247,6 +245,7 @@ $category_result = $con->query($category);
                     </div>
                 </div>
  
+                
                 <div class="row justify-content-center align-items-center p-5">
                     <?php if ($result->num_rows > 0): ?>
                         <?php while ($row = $result->fetch_assoc()): ?>
@@ -256,76 +255,34 @@ $category_result = $con->query($category);
                                         <div class="row no-gutters align-items-center">
                                             <div class="col mr-2">
                                                 <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                                    <?php echo htmlspecialchars($row['name']); ?>
+                                                    <?= htmlspecialchars($row['name']); ?>
                                                 </div>
                                                 <div class="h5 mb-0 font-weight-bold text-gray-800">
                                                     ₱150.00
                                                 </div>
                                                 <span class="badge badge-success">
-                                                    <?php echo htmlspecialchars($row['category']); ?>
+                                                    <?= htmlspecialchars($row['category']); ?>
                                                 </span>
                                             </div>
                                             <div class="col-auto">
-                                                <img src="<?php echo htmlspecialchars($row['image']); ?>" alt="Menu Image" style="width: 150px; height: 100px; object-fit: cover;">
+                                                <img src="<?= htmlspecialchars($row['image']); ?>" alt="Menu Image" style="width: 150px; height: 100px; object-fit: cover;">
                                             </div>
+
                                             <div>
-                                                <button class="btn btn-success" data-toggle="modal" data-target="#menuDetailsModal">Edit</button>
+                                                <button class="btn btn-success btn-sm edit-menu-btn"
+                                                    data-id="<?= $row['id']; ?>"
+                                                    data-name="<?= htmlspecialchars($row['name']); ?>"
+                                                    data-description="<?= htmlspecialchars($row['description']); ?>"
+                                                    data-category="<?= htmlspecialchars($row['category']); ?>"
+                                                    data-toggle="modal"
+                                                    data-target="#menuDetailsModal">
+                                                    Edit
+                                                </button>
 
-                                                <!-- Edit menu modal -->
-                                                <div class="modal fade" id="menuDetailsModal" tabindex="-1" role="dialog" aria-labelledby="menuDetailsModal" aria-hidden="true">
-                                                    <div class="modal-dialog" role="document">
-                                                        <div class="modal-content">
-                                                            <div class="modal-header">
-                                                                <h5 class="modal-title" id="menuDetailsModal">Edit Menu</h5>
-                                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                                    <span aria-hidden="true">&times;</span>
-                                                                </button>
-                                                            </div>
-                                                            <div class="modal-body">
-                                                                <form id="addMenuForm" enctype="multipart/form-data" action="./add_menu.php" method="post">
-                                                                    <!-- Menu Name -->
-                                                                    <div class="form-group">
-                                                                        <label for="menuName">Menu Name</label>
-                                                                        <input type="text" class="form-control" id="menuName" name="menuName" required value="<?php echo htmlspecialchars($row['name']); ?>">
-                                                                    </div>
-
-                                                                    <!-- Description -->
-                                                                    <div class="form-group">
-                                                                        <label for="menuDescription">Description</label>
-                                                                        <textarea class="form-control" id="menuDescription" name="menuDescription" rows="3" required></textarea>
-                                                                    </div>
-
-                                                                    <!-- category -->
-                                                                    <div class="form-group">
-                                                                        <label for="menuDescription">Category</label>
-                                                                        <select class="form-control" name="menuCategory" id="menuCategory">
-                                                                            <?php if ($category_result->num_rows > 0): ?>
-                                                                                <?php while ($row = $category_result->fetch_assoc()): ?>
-                                                                                        <option value="<?php echo htmlspecialchars($row['category']); ?>"><?php echo htmlspecialchars($row['category']); ?></option>
-                                                                                <?php endwhile; ?>
-                                                                            <?php else: ?>
-                                                                                <div class="col-12 text-center">
-                                                                                    <p>No category found</p>
-                                                                                </div>
-                                                                            <?php endif; ?>
-                                                                        </select>
-                                                                    </div>
-
-                                                                    <!-- Image Upload -->
-                                                                    <div class="form-group">
-                                                                        <label for="menuImage">Upload Image</label>
-                                                                        <input type="file" class="form-control-file" id="menuImage" name="menuImage" required>
-                                                                    </div>
-
-                                                                    <!-- Submit Button -->
-                                                                    <button type="submit" class="btn btn-success">Save Menu</button>
-                                                                </form>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                
-                                                <button class="btn btn-success">Archive</button>
+                                                <form method="POST" action="delete_menu.php" style="display:inline;">
+                                                    <input type="hidden" name="menuId" value="<?= htmlspecialchars($row['id']); ?>">
+                                                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                                </form>
                                             </div>
                                         </div>
                                     </div>
@@ -338,6 +295,86 @@ $category_result = $con->query($category);
                         </div>
                     <?php endif; ?>
                 </div>
+
+
+<!-- Edit menu modal -->
+<div class="modal fade" id="menuDetailsModal" tabindex="-1" role="dialog" aria-labelledby="menuDetailsModal" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Menu</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="editMenuForm" enctype="multipart/form-data" action="./edit_menu.php" method="post">
+                    <input type="hidden" id="menuId" name="menuId">
+
+                    <!-- Menu Name -->
+                    <div class="form-group">
+                        <label for="menuName">Menu Name</label>
+                        <input type="text" class="form-control" id="menuName" name="menuName" required>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="form-group">
+                        <label for="menuDescription">Description</label>
+                        <textarea class="form-control" id="menuDescription" name="menuDescription" rows="3" required></textarea>
+                    </div>
+
+                    <!-- Category -->
+                    <div class="form-group">
+                        <label for="menuCategory">Category</label>
+                        <select class="form-control" name="menuCategory" id="menuCategory">
+                            <?php
+                            if ($category_result->num_rows > 0):
+                                while ($cat = $category_result->fetch_assoc()):
+                            ?>
+                                    <option value="<?php echo htmlspecialchars($cat['category']); ?>"><?php echo htmlspecialchars($cat['category']); ?></option>
+                            <?php
+                                endwhile;
+                            endif;
+                            ?>
+                        </select>
+                    </div>
+
+                    <!-- Image Upload -->
+                    <div class="form-group">
+                        <label for="menuImage">Upload Image</label>
+                        <input type="file" class="form-control-file" id="menuImage" name="menuImage">
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn btn-success">Save Menu</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+        <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            document.querySelectorAll(".edit-menu-btn").forEach(button => {
+                button.addEventListener("click", function () {
+                    const menuId = this.getAttribute("data-id");
+                    const menuName = this.getAttribute("data-name");
+                    const menuNameinParagraph = this.getAttribute("data-name");
+                    const menuDescription = this.getAttribute("data-description");
+                    const menuCategory = this.getAttribute("data-category");
+
+                    // Set values in modal fields
+                    document.getElementById("menuId").value = menuId;
+                    document.getElementById("menuName").value = menuName;
+                    document.getElementById("menuDescription").textContent = menuDescription;
+                    document.getElementById("menuCategory").value = menuCategory;
+                    
+                });
+            });
+        });
+
+        </script>
+
 
             </div>
             
@@ -393,7 +430,11 @@ $category_result = $con->query($category);
             toast.show();
         }
     });
+
     </script>
+
+
+
 
 </body>
 
