@@ -228,50 +228,50 @@ $result = $con->query($sql);
                 </thead>
                 <tbody>
                     <?php
-                    if ($result->num_rows > 0) {
-                        while ($row = $result->fetch_assoc()) {
-                            echo "<tr>";
-                            echo "<td>" . htmlspecialchars($row['customer_name']) . "</td>";
-                            echo "<td>" . htmlspecialchars($row['package_name']) . "</td>";
-                            echo "<td>" . htmlspecialchars($row['venue']) . "</td>";
-                            echo "<td>" . htmlspecialchars($row['people_count']) . "</td>";
-                            echo "<td>" . htmlspecialchars($row['event_date']) . "</td>";
-                            echo "<td>" . htmlspecialchars($row['package_price']) . "</td>";
-                            echo "<td>" . htmlspecialchars($row['status']) . "</td>";
-                            echo "<td>
-                                    <button class='btn btn-success btn-sm view-btn'
-                                        data-customer='" . htmlspecialchars($row['customer_name']) . "' 
-                                        data-package='" . htmlspecialchars($row['package_name']) . "' 
-                                        data-venue='" . htmlspecialchars($row['venue']) . "' 
-                                        data-event-date='" . htmlspecialchars($row['event_date']) . "' 
-                                        data-price='" . htmlspecialchars($row['package_price']) . "' 
-                                        data-status='" . htmlspecialchars($row['status']) . "'>
-                                        View
-                                    </button>
+                        if ($result->num_rows > 0) {
+                            while ($row = $result->fetch_assoc()) {
+                                echo "<tr>";
+                                echo "<td>" . htmlspecialchars($row['customer_name']) . "</td>";
+                                echo "<td>" . htmlspecialchars($row['package_name']) . "</td>";
+                                echo "<td>" . htmlspecialchars($row['venue']) . "</td>";
+                                echo "<td>" . htmlspecialchars($row['people_count']) . "</td>";
+                                echo "<td>" . htmlspecialchars($row['event_date']) . "</td>";
+                                echo "<td>" . htmlspecialchars($row['package_price']) . "</td>";
+                                echo "<td>" . htmlspecialchars($row['status']) . "</td>";
+                                echo "<td>
+                                        <button class='btn btn-success btn-sm view-btn'
+                                            data-customer='" . htmlspecialchars($row['customer_name']) . "' 
+                                            data-package='" . htmlspecialchars($row['package_name']) . "' 
+                                            data-venue='" . htmlspecialchars($row['venue']) . "' 
+                                            data-event-date='" . htmlspecialchars($row['event_date']) . "' 
+                                            data-price='" . htmlspecialchars($row['package_price']) . "' 
+                                            data-status='" . htmlspecialchars($row['status']) . "'>
+                                            View
+                                        </button>
 
-                                    <form method='POST' action='update_status.php' style='display:inline;'>
-                                        <input type='hidden' name='reservationId' value='" . htmlspecialchars($row['reservation_id']) . "'>
-                                        <input type='hidden' name='status' value='approved'>
-                                        <button type='submit' class='btn btn-success btn-sm'>Approve</button>
-                                    </form>
+                                        <form method='POST' action='update_status.php' style='display:inline;'>
+                                            <input type='hidden' name='reservationId' value='" . htmlspecialchars($row['reservation_id']) . "'>
+                                            <input type='hidden' name='status' value='approved'>
+                                            <button type='submit' class='btn btn-success btn-sm'>Approve</button>
+                                        </form>
 
-                                    <form method='POST' action='update_status.php' style='display:inline;'>
-                                        <input type='hidden' name='reservationId' value='" . htmlspecialchars($row['reservation_id']) . "'>
-                                        <input type='hidden' name='status' value='completed'>
-                                        <button type='submit' class='btn btn-success btn-sm'>Completed</button>
-                                    </form>
+                                        <form method='POST' action='update_status.php' style='display:inline;'>
+                                            <input type='hidden' name='reservationId' value='" . htmlspecialchars($row['reservation_id']) . "'>
+                                            <input type='hidden' name='status' value='completed'>
+                                            <button type='submit' class='btn btn-success btn-sm'>Completed</button>
+                                        </form>
 
-                                    <form method='POST' action='update_status.php' style='display:inline;'>
-                                        <input type='hidden' name='reservationId' value='" . htmlspecialchars($row['reservation_id']) . "'>
-                                        <input type='hidden' name='status' value='cancelled'>
-                                        <button type='submit' class='btn btn-info btn-sm'>Cancel</button>
-                                    </form>
-                                </td>";
-                            echo "</tr>";
+                                        <form method='POST' action='update_status.php' style='display:inline;'>
+                                            <input type='hidden' name='reservationId' value='" . htmlspecialchars($row['reservation_id']) . "'>
+                                            <input type='hidden' name='status' value='cancelled'>
+                                            <button type='submit' class='btn btn-info btn-sm'>Cancel</button>
+                                        </form>
+                                    </td>";
+                                echo "</tr>";
+                            }
+                        } else {
+                            echo "<tr><td colspan='8' class='text-center'>No records found</td></tr>";
                         }
-                    } else {
-                        echo "<tr><td colspan='8' class='text-center'>No records found</td></tr>";
-                    }
                     ?>
                 </tbody>
 

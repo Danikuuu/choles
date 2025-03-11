@@ -3,40 +3,43 @@ session_start();
 include "./data-handling/db/connection.php";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-  $email = $_POST["email"];
-  $password = $_POST["password"];
+    $email = trim(htmlspecialchars($_POST["email"]));
+    $password = trim($_POST["password"]);
 
-  $stmt = $con->prepare("SELECT id, password, role FROM user WHERE email = ?");
-  $stmt->bind_param("s", $email);
-  $stmt->execute();
-  $stmt->store_result();
+    $stmt = $con->prepare("SELECT id, password, fname, lname, role FROM user WHERE email = ?");
+    $stmt->bind_param("s", $email);
+    $stmt->execute();
+    $stmt->store_result();
 
-  if ($stmt->num_rows > 0) {
-      $stmt->bind_result($id, $hashed_password, $role);
-      $stmt->fetch();
+    if ($stmt->num_rows > 0) {
+        $stmt->bind_result($id, $hashed_password, $fname, $lname, $role);
+        $stmt->fetch();
 
-      if (password_verify($password, $hashed_password)) {
-          $_SESSION["user_id"] = $id;
-          $_SESSION["email"] = $email;
-          $_SESSION["role"] = $role;
+        if (password_verify($password, $hashed_password)) {
+            $_SESSION["user_id"] = $id;
+            $_SESSION["email"] = $email;
+            $_SESSION["fname"] = $fname;
+            $_SESSION["lname"] = $lname;
+            $_SESSION["role"] = $role;
 
-          if ($role === 1) {
-              header("Location: ./admin/dashboard/index.php");
-          } else {
-              header("Location: ./customer/index.php");
-          }
-          exit();
-      } else {
-          $error = "Invalid password!";
-      }
-  } else {
-      $error = "User not found!";
-  }
+            if ($role == 1) { 
+                header("Location: ./admin/dashboard/index.php");
+            } else {
+                header("Location: ./customer/index.php");
+            }
+            exit();
+        } else {
+            $error = "Invalid password!";
+        }
+    } else {
+        $error = "User not found!";
+    }
 
-  $stmt->close();
-  $con->close();
+    $stmt->close();
+    $con->close();
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
