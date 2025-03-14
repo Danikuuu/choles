@@ -34,16 +34,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             // Clear session data
             unset($_SESSION["registration_data"]);
             unset($_SESSION["otp"]);
-
+            $_SESSION["success"] = "Registration Successful!";
             header("Location: login.php"); // Redirect to dashboard or success page
             exit();
         } else {
-            $error = "Something went wrong! Please try again.";
+            $_SESSION["error"] = "Something went wrong! Please try again.";
         }
 
         $stmt->close();
     } else {
-        $error = "Invalid OTP. Please try again.";
+        $_SESSION["success"] = "Invalid OTP Code try again";
+        header("Location: otp.php");
     }
 }
 
@@ -133,6 +134,24 @@ input[type=number]::-webkit-outer-spin-button {
     <div class="container height-100 d-flex justify-content-center align-items-center">
         <div class="position-relative">
             <div class="card p-2 text-center">
+            <div class=" p-3" style="z-index: 11">
+                            <div id="toastMessage" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                                <div class="d-flex">
+                                    <div class="toast-body">
+                                        <?php
+                                        if (isset($_SESSION['success'])) {
+                                            echo $_SESSION['success'];
+                                            unset($_SESSION['success']); // Clear message after showing
+                                        } elseif (isset($_SESSION['error'])) {
+                                            echo $_SESSION['error'];
+                                            unset($_SESSION['error']); // Clear message after showing
+                                        }
+                                        ?>
+                                    </div>
+                                    <button type="button" class="btn me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"><i class="fas fa-times"></i></button>
+                                </div>
+                            </div>
+                        </div>
                 <h6>Please enter the one time password <br> to verify your account</h6>
                 <div> <span>A code has been sent to</span> <small id="maskedNumber">your email</small> </div>
                 <div id="otp" class="inputs d-flex flex-row justify-content-center mt-2">
@@ -208,6 +227,14 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
 });
+
+document.addEventListener("DOMContentLoaded", function () {
+        var toastEl = document.getElementById('toastMessage');
+        if (toastEl && toastEl.textContent.trim() !== "") {
+            var toast = new bootstrap.Toast(toastEl);
+            toast.show();
+        }
+    });
 </script>
 </html>
 

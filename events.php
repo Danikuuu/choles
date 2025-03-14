@@ -41,7 +41,7 @@
     <div class="container-fluid container-xl position-relative d-flex align-items-center">
 
       <a href="index.php" class="logo d-flex align-items-center me-auto">
-        <h1 class="sitename">Mentor</h1>
+        <h1 class="sitename">CHOLES</h1>
       </a>
 
       <nav id="navmenu" class="navmenu">

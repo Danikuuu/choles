@@ -5,12 +5,10 @@
 <head>
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
-  <title>Courses - Mentor Bootstrap Template</title>
+  <title>Catering Samples</title>
   <meta name="description" content="">
   <meta name="keywords" content="">
 
-  <!-- Favicons -->
-  <link href="assets/img/favicon.png" rel="icon">
   <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">
 
   <!-- Fonts -->
@@ -43,7 +41,7 @@
     <div class="container-fluid container-xl position-relative d-flex align-items-center">
 
       <a href="index.php" class="logo d-flex align-items-center me-auto">
-        <h1 class="sitename">Mentor</h1>
+        <h1 class="sitename">CHOLES</h1>
       </a>
 
       <nav id="navmenu" class="navmenu">

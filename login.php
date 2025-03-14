@@ -47,12 +47,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <head>
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
-  <title>Contact - Mentor Bootstrap Template</title>
+  <title>Login</title>
   <meta name="description" content="">
   <meta name="keywords" content="">
 
-  <!-- Favicons -->
-  <link href="assets/img/favicon.png" rel="icon">
   <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">
 
   <!-- Fonts -->
@@ -105,11 +103,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
           <div class="card shadow p-4">
             <h3 class="text-center">Login</h3>
             <form method="post" action="login.php">
-              <?php if (isset($error)) : ?>
-                <div class="alert alert-danger text-center">
-                  <?php echo $error; ?>
-                </div>
-              <?php endif; ?>
+            <div class=" p-3" style="z-index: 11">
+                            <div id="toastMessage" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                                <div class="d-flex">
+                                    <div class="toast-body">
+                                        <?php
+                                        if (isset($_SESSION['success'])) {
+                                            echo $_SESSION['success'];
+                                            unset($_SESSION['success']); // Clear message after showing
+                                        } elseif (isset($_SESSION['error'])) {
+                                            echo $_SESSION['error'];
+                                            unset($_SESSION['error']); // Clear message after showing
+                                        }
+                                        ?>
+                                    </div>
+                                    <button type="button" class="btn me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"><i class="fas fa-times"></i></button>
+                                </div>
+                            </div>
+                        </div>
 
               <div class="mb-3">
                 <label for="email" class="form-label">Email Address</label>
@@ -120,7 +131,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <input type="password" name="password" class="form-control" id="password" placeholder="Enter your password">
               </div>
               <button type="submit" class="btn btn-primary w-100">Login</button>
-              <p class="text-center mt-3">Don't have an account? <a href="register.html">Sign up</a></p>
+              <p class="text-center mt-3">Forgot password? <a href="./forgot-password.php">Click here!</a></p>
+              <p class="text-center mt-3">Don't have an account? <a href="signup.php">Sign up</a></p>
             </form>
           </div>
         </div>
@@ -194,6 +206,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
   <!-- Main JS File -->
   <script src="assets/js/main.js"></script>
+  <script>  
+    document.addEventListener("DOMContentLoaded", function () {
+        var toastEl = document.getElementById('toastMessage');
+        if (toastEl && toastEl.textContent.trim() !== "") {
+            var toast = new bootstrap.Toast(toastEl);
+            toast.show();
+        }
+    });
+  </script>
 </body>
 
 </html>

@@ -16,9 +16,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = $_POST["email"];
     $mobile = $_POST["mobile"];
     $password = $_POST["password"];
-    $province = $_POST["province"];
-    $city = $_POST["city"];
-    $barangay = $_POST["barangay"];
+    $province = $_POST["province_name"];
+    $city = $_POST["city_name"];
+    $barangay = $_POST["barangay_name"];
     $street = $_POST["street"];
     $role = 0;
 
@@ -86,12 +86,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <head>
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
-  <title>Contact - Mentor Bootstrap Template</title>
+  <title>Signup</title>
   <meta name="description" content="">
   <meta name="keywords" content="">
 
   <!-- Favicons -->
-  <link href="assets/img/favicon.png" rel="icon">
   <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">
 
   <!-- Fonts -->
@@ -175,25 +174,30 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <input type="text" name="mobile" class="form-control" required>
               </div>
 
-              <div class="row">
-                <div class="col-md-6">
-                  <div class="mb-3">
-                    <label class="form-label">Province</label>
-                    <input type="text" name="province" class="form-control" required>
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="mb-3">
-                    <label class="form-label">City</label>
-                    <input type="text" name="city" class="form-control" required>
-                  </div>
-                </div>
+              <div class="mb-3">
+              <label class="form-label" for="province">Province</label>
+                <select id="province" class="form-control" required name="province">
+                    <option value="">Select Province</option>
+                </select>
+                <input type="hidden" id="province_name" name="province_name"> <!-- Hidden input -->
               </div>
 
               <div class="mb-3">
-                <label class="form-label">Barangay</label>
-                <input type="text" name="barangay" class="form-control" required>
+                <label class="form-label" for="city">City</label>
+                <select id="city" class="form-control" required name="city">
+                    <option value="">Select City</option>
+                </select>
+                <input type="hidden" id="city_name" name="city_name"> <!-- Hidden input -->
               </div>
+
+              <div class="mb-3">
+                <label class="form-label" for="barangay">Barangay</label>
+                <select id="barangay" class="form-control" required name="barangay">
+                    <option value="">Select Barangay</option>
+                </select>
+                <input type="hidden" id="barangay_name" name="barangay_name"> <!-- Hidden input -->
+              </div>
+
 
               <div class="mb-3">
                 <label class="form-label">Street</label>
@@ -277,8 +281,80 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <script src="assets/vendor/glightbox/js/glightbox.min.js"></script>
 <script src="assets/vendor/purecounter/purecounter_vanilla.js"></script>
 <script src="assets/vendor/swiper/swiper-bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <!-- Main JS File -->
 <script src="assets/js/main.js"></script>
+
+<script>
+let provinces = [];
+let cities = [];
+let barangays = [];
+
+$(document).ready(function() {
+    // Load Province Data
+    $.getJSON("province.json", function(data) {
+        provinces = data;
+        $.each(provinces, function(index, province) {
+            $("#province").append(`<option value="${province.province_code}">${province.province_name}</option>`);
+        });
+    });
+
+    // Load City Data
+    $.getJSON("city.json", function(data) {
+        cities = data;
+    });
+
+    // Load Barangay Data
+    $.getJSON("barangay.json", function(data) {
+        barangays = data;
+    });
+
+    // Province Change Event
+    $("#province").change(function() {
+        let selectedProvinceCode = $(this).val();
+        let selectedProvince = provinces.find(province => province.province_code === selectedProvinceCode);
+
+        $("#city").html('<option value="">Select City</option>');
+        $("#barangay").html('<option value="">Select Barangay</option>');
+
+        // Store province name in the hidden input
+        $("#province_name").val(selectedProvince ? selectedProvince.province_name : "");
+
+        $.each(cities, function(index, city) {
+            if (city.province_code === selectedProvinceCode) {
+                $("#city").append(`<option value="${city.city_code}">${city.city_name}</option>`);
+            }
+        });
+    });
+
+    // City Change Event
+    $("#city").change(function() {
+        let selectedCityCode = $(this).val();
+        let selectedCity = cities.find(city => city.city_code === selectedCityCode);
+
+        $("#barangay").html('<option value="">Select Barangay</option>');
+
+        // Store city name in the hidden input
+        $("#city_name").val(selectedCity ? selectedCity.city_name : "");
+
+        $.each(barangays, function(index, barangay) {
+            if (barangay.city_code === selectedCityCode) {
+                $("#barangay").append(`<option value="${barangay.brgy_code}">${barangay.brgy_name}</option>`);
+            }
+        });
+    });
+
+    // Barangay Change Event
+    $("#barangay").change(function() {
+        let selectedBarangayCode = $(this).val();
+        let selectedBarangay = barangays.find(brgy => brgy.brgy_code === selectedBarangayCode);
+
+        // Store barangay name in the hidden input
+        $("#barangay_name").val(selectedBarangay ? selectedBarangay.brgy_name : "");
+    });
+});
+
+</script>
 </body>
 </html>
