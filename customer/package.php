@@ -80,7 +80,7 @@ while ($row = $dateResult->fetch_assoc()) {
 
             <!-- Heading -->
             <div class="sidebar-heading">
-                Menu Management
+                Reservations
             </div>
 
             <!-- Nav Item - Pages Collapse Menu -->
@@ -96,30 +96,15 @@ while ($row = $dateResult->fetch_assoc()) {
                     <span>Reservation History</span></a>
             </li>
 
-            <!-- Divider -->
-            <hr class="sidebar-divider">
-
             <!-- Heading -->
             <div class="sidebar-heading">
-                Reservations
+                Feedback
             </div>
 
-            <li class="nav-item">
-                <a class="nav-link" href="./reservation.php">
-                    <i class="fas fa-fw fa-folder"></i>
-                    <span>Reservations</span></a>
-            </li>
-
-            <!-- Anomyties -->
-            <li class="nav-item">
-                <a class="nav-link" href="./inventory.php">
-                    <i class="fas fa-fw fa-chart-area"></i>
-                    <span>Equipments</span></a>
-            </li>
-            <!-- Nav Item - Charts -->
+            <!-- Nav Item - Pages Collapse Menu -->
             <li class="nav-item">
                 <a class="nav-link" href="./feedback.php">
-                    <i class="fas fa-fw fa-chart-area"></i>
+                    <i class="fas fa-fw fa-utensils"></i>
                     <span>Feedback</span></a>
             </li>
 
@@ -178,6 +163,7 @@ while ($row = $dateResult->fetch_assoc()) {
                         <h1 class="h3 mb-0 text-gray-800">Packages</h1>
                     </div>
 
+               <div class="d-flex justify-content-center align-items-center">
                 <div class="p-3" style="z-index: 11">
                             <div id="toastMessage" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
                                 <div class="d-flex">
@@ -196,6 +182,7 @@ while ($row = $dateResult->fetch_assoc()) {
                                 </div>
                             </div>
                         </div>
+               </div>
 
                 <div class="row justify-content-center align-items-center p-5">
                     <?php if ($result->num_rows > 0): ?>
@@ -213,6 +200,7 @@ while ($row = $dateResult->fetch_assoc()) {
                                                 </div>
                                                 <span class="badge badge-success package-price">₱ <?php echo htmlspecialchars($row['package_price']); ?></span>
                                                 <span class="badge badge-success package-venue"><?php echo htmlspecialchars($row['venue']); ?></span>
+                                                <span class="badge badge-success package-downpayment">₱ <?php echo htmlspecialchars($row['downpayment']); ?></span>
                                                 <span class="badge badge-success package-people"><i class="fas fa-user"></i> <?php echo htmlspecialchars($row['people_count']); ?></span>
                                                 <span class="badge <?php echo ($row['venue_styling'] == 1) ? 'badge-success' : 'badge-danger'; ?> package-styling">
                                                     <i class="fas fa-paint-brush"></i> <?php echo ($row['venue_styling'] == 1) ? 'Included' : 'Not Included'; ?>
@@ -252,11 +240,11 @@ while ($row = $dateResult->fetch_assoc()) {
                                 <p class="text-center"><strong>Venue:</strong> <span id="modal_venue"></span></p>
                                 <p class="text-center"><strong>People Count:</strong> <span id="modal_people_count"></span></p>
                                 <p class="text-center"><strong>Venue Styling:</strong> <span id="modal_venue_styling"></span></p>
+                                <p class="text-center"><strong>Downpayment:</strong> <span id="modal_downpayment"></span></p>
 
                                 <!-- Reservation Form -->
                                 <form id="reservationForm" action="./create_reservation.php" method="post">
                                     <input type="hidden" id="package_id" name="package_id">
-                                    <input type="hidden" id="customer_id" name="customer_id" value="10">
 
                                     <div class="form-group">
                                         <label for="event_date">Event Date</label>
@@ -366,6 +354,7 @@ while ($row = $dateResult->fetch_assoc()) {
                     let venue = this.querySelector(".package-venue")?.textContent.trim() || "N/A";
                     let peopleCount = this.querySelector(".package-people")?.textContent.trim() || "N/A";
                     let venueStyling = this.querySelector(".package-styling")?.textContent.trim() || "N/A";
+                    let downpayment = this.querySelector(".package-downpayment")?.textContent.trim() || "N/A";
                     let packageImage = this.querySelector("img")?.src || "";
 
                     // Update modal fields
@@ -376,6 +365,7 @@ while ($row = $dateResult->fetch_assoc()) {
                     document.getElementById("modal_venue").innerText = venue;
                     document.getElementById("modal_people_count").innerText = peopleCount;
                     document.getElementById("modal_venue_styling").innerText = venueStyling;
+                    document.getElementById("modal_downpayment").innerText = downpayment;
                     document.getElementById("modal_package_image").src = packageImage;
 
                     // Reset all checkboxes

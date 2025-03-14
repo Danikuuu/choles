@@ -42,9 +42,9 @@
         <ul>
           <li><a href="index.php" class="active">Home<br></a></li>
           <li><a href="about.php">About Us</a></li>
-          <li><a href="courses.php">Catering</a></li>
+          <li><a href="catering.php">Catering</a></li>
           <li><a href="events.php">Event Styling</a></li>
-          <li><a href="contact.php">Contact Us</a></li>
+          <!-- <li><a href="contact.php">Contact Us</a></li> -->
           <li><a href="login.php">Login</a></li>
         </ul>
         <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
@@ -289,106 +289,11 @@
 
         </div>
 
-      </div>
+      </div>111
 
     </section><!-- /Features Section -->
 
-    <!-- Courses Section -->
-    <section id="courses" class="courses section">
 
-      <!-- Section Title -->
-      <div class="container section-title" data-aos="fade-up">
-        <h2>Packages</h2>
-        <p>Popular Packages</p>
-      </div><!-- End Section Title -->
-
-      <div class="container">
-
-        <div class="row">
-
-          <div class="col-lg-4 col-md-6 d-flex align-items-stretch" data-aos="zoom-in" data-aos-delay="100">
-            <div class="course-item">
-              <img src="assets/img/course-1.jpg" class="img-fluid" alt="...">
-              <div class="course-content">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                  <p class="category">Web Development</p>
-                  <p class="price">$169</p>
-                </div>
-
-                <h3><a href="course-details.html">Website Design</a></h3>
-                <p class="description">Et architecto provident deleniti facere repellat nobis iste. Id facere quia quae dolores dolorem tempore.</p>
-                <div class="trainer d-flex justify-content-between align-items-center">
-                  <div class="trainer-profile d-flex align-items-center">
-                    <img src="assets/img/trainers/trainer-1-2.jpg" class="img-fluid" alt="">
-                    <a href="" class="trainer-link">Antonio</a>
-                  </div>
-                  <div class="trainer-rank d-flex align-items-center">
-                    <i class="bi bi-person user-icon"></i>&nbsp;50
-                    &nbsp;&nbsp;
-                    <i class="bi bi-heart heart-icon"></i>&nbsp;65
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div> <!-- End Course Item-->
-
-          <div class="col-lg-4 col-md-6 d-flex align-items-stretch mt-4 mt-md-0" data-aos="zoom-in" data-aos-delay="200">
-            <div class="course-item">
-              <img src="assets/img/course-2.jpg" class="img-fluid" alt="...">
-              <div class="course-content">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                  <p class="category">Marketing</p>
-                  <p class="price">$250</p>
-                </div>
-
-                <h3><a href="course-details.html">Search Engine Optimization</a></h3>
-                <p class="description">Et architecto provident deleniti facere repellat nobis iste. Id facere quia quae dolores dolorem tempore.</p>
-                <div class="trainer d-flex justify-content-between align-items-center">
-                  <div class="trainer-profile d-flex align-items-center">
-                    <img src="assets/img/trainers/trainer-2-2.jpg" class="img-fluid" alt="">
-                    <a href="" class="trainer-link">Lana</a>
-                  </div>
-                  <div class="trainer-rank d-flex align-items-center">
-                    <i class="bi bi-person user-icon"></i>&nbsp;35
-                    &nbsp;&nbsp;
-                    <i class="bi bi-heart heart-icon"></i>&nbsp;42
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div> <!-- End Course Item-->
-
-          <div class="col-lg-4 col-md-6 d-flex align-items-stretch mt-4 mt-lg-0" data-aos="zoom-in" data-aos-delay="300">
-            <div class="course-item">
-              <img src="assets/img/course-3.jpg" class="img-fluid" alt="...">
-              <div class="course-content">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                  <p class="category">Content</p>
-                  <p class="price">$180</p>
-                </div>
-
-                <h3><a href="course-details.html">Copywriting</a></h3>
-                <p class="description">Et architecto provident deleniti facere repellat nobis iste. Id facere quia quae dolores dolorem tempore.</p>
-                <div class="trainer d-flex justify-content-between align-items-center">
-                  <div class="trainer-profile d-flex align-items-center">
-                    <img src="assets/img/trainers/trainer-3-2.jpg" class="img-fluid" alt="">
-                    <a href="" class="trainer-link">Brandon</a>
-                  </div>
-                  <div class="trainer-rank d-flex align-items-center">
-                    <i class="bi bi-person user-icon"></i>&nbsp;20
-                    &nbsp;&nbsp;
-                    <i class="bi bi-heart heart-icon"></i>&nbsp;85
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div> <!-- End Course Item-->
-
-        </div>
-
-      </div>
-
-    </section><!-- /Courses Section -->
 
     <!-- Trainers Index Section -->
     <section id="trainers-index" class="section trainers-index">
@@ -506,17 +411,6 @@
             <li><a href="#">Chairs and Tables</a></li>
             <li><a href="#">And many more</a></li>
           </ul>
-        </div>
-
-        <div class="col-lg-4 col-md-12 footer-newsletter">
-          <h4>Have a concern?</h4>
-          <p>Send us a message anonymosly to fulfill your concern</p>
-          <form action="forms/newsletter.php" method="post" class="php-email-form">
-            <div class="newsletter-form"><input type="email" name="email"><input type="submit" value="Send"></div>
-            <div class="loading">Loading</div>
-            <div class="error-message"></div>
-            <div class="sent-message">Your subscription request has been sent. Thank you!</div>
-          </form>
         </div>
 
       </div>

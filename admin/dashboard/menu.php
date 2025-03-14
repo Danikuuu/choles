@@ -12,8 +12,16 @@ require_once '../../data-handling/db/connection.php';
 $sql = "SELECT id, name, description, category, image, created_at FROM menu ORDER BY created_at DESC";
 $result = $con->query($sql);
 
-$category = "SELECT DISTINCT category FROM menu ORDER BY category ASC";
-$category_result = $con->query($category);
+
+$category_query = "SELECT DISTINCT category FROM menu ORDER BY category ASC";
+$category_result = $con->query($category_query);
+
+$categories = [];
+if ($category_result->num_rows > 0) {
+    while ($row = $category_result->fetch_assoc()) {
+        $categories[] = htmlspecialchars($row['category']);
+    }
+}
 
 ?>
 
@@ -133,22 +141,15 @@ $category_result = $con->query($category);
                                 <img class="img-profile rounded-circle"
                                     src="img/undraw_profile.svg">
                             </a>
+                            <!-- Dropdown - User Information -->
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
                                 aria-labelledby="userDropdown">
-                                <a class="dropdown-item" href="#">
+                                <a class="dropdown-item" href="./profile.php">
                                     <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
                                     Profile
                                 </a>
-                                <a class="dropdown-item" href="#">
-                                    <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Settings
-                                </a>
-                                <a class="dropdown-item" href="#">
-                                    <i class="fas fa-list fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Activity Log
-                                </a>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="" data-toggle="modal" data-target="#logoutModal">
+                                <a class="dropdown-item" href="../../destroy.php" data-toggle="modal" data-target="#logoutModal">
                                     <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
                                     Logout
                                 </a>
@@ -205,28 +206,26 @@ $category_result = $con->query($category);
                                 <form id="addMenuForm" enctype="multipart/form-data" action="./add_menu.php" method="post">
                                     <!-- Menu Name -->
                                     <div class="form-group">
-                                        <label for="menuName">Menu Name</label>
-                                        <input type="text" class="form-control" id="menuName" name="menuName" required>
+                                        <label for="addMenuName">Menu Name</label>
+                                        <input type="text" class="form-control" id="addMenuName" name="addMenuName" required>
                                     </div>
 
                                     <!-- Description -->
                                     <div class="form-group">
-                                        <label for="menuDescription">Description</label>
-                                        <textarea class="form-control" id="menuDescription" name="menuDescription" rows="3" required></textarea>
+                                        <label for="addMenuDescription">Description</label>
+                                        <textarea class="form-control" id="addMenuDescription" name="addMenuDescription" rows="3" required></textarea>
                                     </div>
 
                                     <!-- category -->
                                     <div class="form-group">
-                                        <label for="menuDescription">Category</label>
-                                        <select class="form-control" name="menuCategory" id="menuCategory">
-                                            <?php if ($category_result->num_rows > 0): ?>
-                                                <?php while ($row = $category_result->fetch_assoc()): ?>
-                                                        <option value="<?php echo htmlspecialchars($row['category']); ?>"><?php echo htmlspecialchars($row['category']); ?></option>
-                                                <?php endwhile; ?>
+                                        <label for="addMenuCategory">Category</label>
+                                        <select class="form-control" name="addMenuCategory" id="addMenuCategory">
+                                            <?php if (!empty($categories)): ?>
+                                                <?php foreach ($categories as $category): ?>
+                                                    <option value="<?= $category; ?>"><?= $category; ?></option>
+                                                <?php endforeach; ?>
                                             <?php else: ?>
-                                                <div class="col-12 text-center">
-                                                    <p>No category found</p>
-                                                </div>
+                                                <option disabled>No category found</option>
                                             <?php endif; ?>
                                         </select>
                                     </div>
@@ -325,17 +324,15 @@ $category_result = $con->query($category);
 
                     <!-- Category -->
                     <div class="form-group">
-                        <label for="menuCategory">Category</label>
-                        <select class="form-control" name="menuCategory" id="menuCategory">
-                            <?php
-                            if ($category_result->num_rows > 0):
-                                while ($cat = $category_result->fetch_assoc()):
-                            ?>
-                                    <option value="<?php echo htmlspecialchars($cat['category']); ?>"><?php echo htmlspecialchars($cat['category']); ?></option>
-                            <?php
-                                endwhile;
-                            endif;
-                            ?>
+                        <label for="editmenuCategory">Category</label>
+                        <select class="form-control" name="editMenuCategory" id="editMenuCategory">
+                            <?php if (!empty($categories)): ?>
+                                <?php foreach ($categories as $category): ?>
+                                    <option value="<?= $category; ?>"><?= $category; ?></option>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <option disabled>No category found</option>
+                            <?php endif; ?>
                         </select>
                     </div>
 
@@ -354,21 +351,27 @@ $category_result = $con->query($category);
 </div>
 
         <script>
-        document.addEventListener("DOMContentLoaded", function () {
+            document.addEventListener("DOMContentLoaded", function () {
             document.querySelectorAll(".edit-menu-btn").forEach(button => {
                 button.addEventListener("click", function () {
                     const menuId = this.getAttribute("data-id");
                     const menuName = this.getAttribute("data-name");
-                    const menuNameinParagraph = this.getAttribute("data-name");
                     const menuDescription = this.getAttribute("data-description");
                     const menuCategory = this.getAttribute("data-category");
 
                     // Set values in modal fields
                     document.getElementById("menuId").value = menuId;
                     document.getElementById("menuName").value = menuName;
-                    document.getElementById("menuDescription").textContent = menuDescription;
-                    document.getElementById("menuCategory").value = menuCategory;
-                    
+                    document.getElementById("menuDescription").value = menuDescription;
+
+                    // Set the category dropdown
+                    let categorySelect = document.getElementById("editMenuCategory");
+                    for (let option of categorySelect.options) {
+                        if (option.value === menuCategory) {
+                            option.selected = true;
+                            break;
+                        }
+                    }
                 });
             });
         });

@@ -17,6 +17,7 @@ $sql = "SELECT
             r.event_date,
             r.status,
             r.down_payment, 
+            r.downpayment_price,
             p.package_name,
             p.package_price,
             p.people_count,
@@ -95,7 +96,7 @@ $result = $stmt->get_result();
 
             <!-- Heading -->
             <div class="sidebar-heading">
-                Menu Management
+                Reservations    
             </div>
 
             <!-- Nav Item - Pages Collapse Menu -->
@@ -111,32 +112,20 @@ $result = $stmt->get_result();
                     <span>Reservation History</span></a>
             </li>
 
-            <!-- Divider -->
-            <hr class="sidebar-divider">
-
             <!-- Heading -->
             <div class="sidebar-heading">
-                Reservations
+                Feedback
             </div>
 
-            <li class="nav-item">
-                <a class="nav-link" href="./reservation.php">
-                    <i class="fas fa-fw fa-folder"></i>
-                    <span>Reservations</span></a>
-            </li>
-
-            <!-- Anomyties -->
-            <li class="nav-item">
-                <a class="nav-link" href="./inventory.php">
-                    <i class="fas fa-fw fa-chart-area"></i>
-                    <span>Equipments</span></a>
-            </li>
-            <!-- Nav Item - Charts -->
+            <!-- Nav Item - Pages Collapse Menu -->
             <li class="nav-item">
                 <a class="nav-link" href="./feedback.php">
-                    <i class="fas fa-fw fa-chart-area"></i>
+                    <i class="fas fa-fw fa-utensils"></i>
                     <span>Feedback</span></a>
             </li>
+
+            <!-- Divider -->
+            <hr class="sidebar-divider">
 
         </ul>
         <!-- End of Sidebar -->
@@ -223,6 +212,7 @@ $result = $stmt->get_result();
                         <th>Number of People</th>
                         <th>Date</th>
                         <th>Price</th>
+                        <th>Downpayment</th>
                         <th>Status</th>
                         <th>Action</th>
                     </tr>
@@ -238,6 +228,7 @@ $result = $stmt->get_result();
                             echo "<td>" . htmlspecialchars($row['people_count']) . "</td>";
                             echo "<td>" . htmlspecialchars($row['event_date']) . "</td>";
                             echo "<td>" . htmlspecialchars($row['package_price']) . "</td>";
+                            echo "<td>" . htmlspecialchars($row['downpayment_price']) . "</td>";
                             echo "<td>" . htmlspecialchars($row['status']) . "</td>";
                             echo "<td>
                                     <button class='btn btn-success btn-sm view-btn'
@@ -247,6 +238,7 @@ $result = $stmt->get_result();
                                         data-venue='" . htmlspecialchars($row['venue']) . "'
                                         data-event-date='" . htmlspecialchars($row['event_date']) . "'
                                         data-price='" . htmlspecialchars($row['package_price']) . "'
+                                        data-downpayment_price='" . htmlspecialchars($row['downpayment_price']) . "'
                                         data-status='" . htmlspecialchars($row['status']) . "'
                                         data-downpayment='" . htmlspecialchars($row['down_payment']) . "'>
                                         View
@@ -307,8 +299,12 @@ $result = $stmt->get_result();
                                     <th>Status</th>
                                     <td id="modalStatus"></td>
                                 </tr>
-                                <tr id="downpaymentRow">
+                                <tr>
                                     <th>Downpayment</th>
+                                    <td id="modalDownpayment"></td>
+                                </tr>
+                                <tr id="downpaymentRow">
+                                    <th>Downpayment Image</th>
                                     <td id="downpaymentContent"></td>
                                 </tr>
                             </table>
@@ -319,61 +315,8 @@ $result = $stmt->get_result();
         </div>
     </div>
 
-                <!-- Bootstrap Modal -->
-                <div class="modal fade" id="reservationModal" tabindex="-1" aria-labelledby="reservationModalLabel" aria-hidden="true">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="reservationModalLabel">Create Reservation</h5>
-                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
-                            </div>
-                            <div class="modal-body">
-                                <!-- Package Details -->
-                                <div class="text-center">
-                                    <img id="modal_package_image" src="" alt="Package Image" style="width: 100%; height: 200px; object-fit: cover;">
-                                </div>
-                                <h4 class="text-center mt-2" id="modal_package_name"></h4>
-                                <p class="text-center"><strong>Price:</strong> <span id="modal_package_price"></span></p>
-                                <p class="text-center"><strong>Venue:</strong> <span id="modal_venue"></span></p>
-                                <p class="text-center"><strong>People Count:</strong> <span id="modal_people_count"></span></p>
-                                <p class="text-center"><strong>Venue Styling:</strong> <span id="modal_venue_styling"></span></p>
-
-                                <!-- Reservation Form -->
-                                <form id="reservationForm" action="./create_reservation.php" method="post">
-                                    <input type="hidden" id="package_id" name="package_id">
-                                    <input type="hidden" id="customer_id" name="customer_id" value="10">
-
-                                    <div class="form-group">
-                                        <label for="event_date">Event Date</label>
-                                        <input type="date" class="form-control" id="event_date" name="event_date" required>
-                                    </div>
-
-                                    <div class="form-group">
-                                        <label for="menu_selection">Select Menus (<span id="menu_limit"></span> items)</label> <br>
-                                        <?php if ($menuResult->num_rows > 0): ?>
-                                            <?php while ($row = $menuResult->fetch_assoc()): ?>
-                                                <div class="form-check">
-                                                    <input type="checkbox" class="form-check-input menu-checkbox" id="menu_<?php echo $row['id']; ?>" name="menu_id[]" value="<?php echo $row['id']; ?>">
-                                                    <label class="form-check-label" for="menu_<?php echo $row['id']; ?>"><?php echo htmlspecialchars($row['name']); ?></label>
-                                                </div>
-                                            <?php endwhile; ?>
-                                        <?php else: ?>
-                                            <div class="col-12 text-center">
-                                                <p>No menu found.</p>
-                                            </div>
-                                        <?php endif; ?>
-
-                                    <button type="submit" class="btn btn-success">Confirm Reservation</button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
 
-                </div>
 
                 </div>
                 <!-- /.container-fluid -->
@@ -450,6 +393,7 @@ $result = $stmt->get_result();
                 let venue = $(this).data("venue");
                 let eventDate = $(this).data("event-date");
                 let price = $(this).data("price");
+                let downpayment_price = $(this).data("downpayment_price");
                 let status = $(this).data("status");
                 let downpayment = $(this).data("downpayment");
 
@@ -461,6 +405,7 @@ $result = $stmt->get_result();
                 $("#modalEventDate").text(eventDate);
                 $("#modalPrice").text(price);
                 $("#modalStatus").text(status);
+                $("#modalDownpayment").text(downpayment_price);
 
                 // Handle Downpayment Section
                 let downpaymentRow = $("#downpaymentRow");
@@ -471,11 +416,12 @@ $result = $stmt->get_result();
                 if (status === "pending") {
                     downpaymentRow.show();
                     downpaymentContent.html(`
+                    <img src="${downpayment}" alt="Downpayment Receipt" class="img-fluid" style="max-width: 300px;">
                         <form action="./upload_downpayment.php" method="post" enctype="multipart/form-data">
-                            <input type="text" name="id" value="${reservationId}">
+                            <input type="hidden" name="id" value="${reservationId}">
                             <input type="file" name="downpayment" id="downpayment">
                             <input type="submit" value="Submit" class="btn btn-sm btn-success">
-                        </form>
+                        </form> <br>
                     `);
                 } else if (status === "approved" || status === "completed") {
                     downpaymentRow.show();

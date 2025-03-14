@@ -124,9 +124,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <ul>
           <li><a href="index.php">Home<br></a></li>
           <li><a href="about.php">About Us</a></li>
-          <li><a href="courses.php">Catering</a></li>
+          <li><a href="catering.php">Catering</a></li>
           <li><a href="events.php">Event Styling</a></li>
-          <li><a href="contact.php">Contact Us</a></li>
+          <!-- <li><a href="contact.php">Contact Us</a></li> -->
           <li><a href="login.php">Login</a></li>
         </ul>
         <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
@@ -214,10 +214,55 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </div>
   </main>
 
-  <footer id="footer" class="footer position-relative">
-    <div class="container text-center">
-      <p>© CHOLES All Rights Reserved</p>
+  <footer id="footer" class="footer position-relative light-background">
+
+    <div class="container footer-top">
+      <div class="row gy-4">
+        <div class="col-lg-4 col-md-6 footer-about">
+          <a href="index.html" class="logo d-flex align-items-center">
+            <span class="sitename">CHOLES Catering Services</span>
+          </a>
+          <div class="footer-contact pt-3">
+            <p>Cabanatuan</p>
+            <p>Nueva Ecija, Philippines</p>
+            <p class="mt-3"><strong>Phone:</strong> <span>+63 912-345-6789</span></p>
+            <p><strong>Email:</strong> <span>cholescatering@gmail.com</span></p>
+          </div>
+          <div class="social-links d-flex mt-4">
+            <a href=""><i class="bi bi-facebook"></i></a>
+            <a href=""><i class="bi bi-instagram"></i></a>
+          </div>
+        </div>
+
+        <div class="col-lg-2 col-md-3 footer-links">
+          <h4>Useful Links</h4>
+          <ul>
+            <li><a href="#">Home</a></li>
+            <li><a href="#">About us</a></li>
+            <li><a href="#">Services</a></li>
+            <li><a href="#">Terms of service</a></li>
+            <li><a href="#">Privacy policy</a></li>
+          </ul>
+        </div>
+
+        <div class="col-lg-2 col-md-3 footer-links">
+          <h4>Our Services</h4>
+          <ul>
+            <li><a href="#">Catering</a></li>
+            <li><a href="#">Venue Styling</a></li>
+            <li><a href="#">Menu Choosing</a></li>
+            <li><a href="#">Chairs and Tables</a></li>
+            <li><a href="#">And many more</a></li>
+          </ul>
+        </div>
+
+      </div>
     </div>
+
+    <div class="container copyright text-center mt-4">
+      <p>©  <strong class="px-1 sitename">CHOLES</strong> <span>All Rights Reserved</span></p>
+    </div>
+
   </footer>
 
   <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>

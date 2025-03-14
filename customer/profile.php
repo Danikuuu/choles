@@ -74,7 +74,7 @@ $user = $result->fetch_assoc();
 
             <!-- Heading -->
             <div class="sidebar-heading">
-                Menu Management
+                Reservations
             </div>
 
             <!-- Nav Item - Pages Collapse Menu -->
@@ -90,30 +90,15 @@ $user = $result->fetch_assoc();
                     <span>Reservation History</span></a>
             </li>
 
-            <!-- Divider -->
-            <hr class="sidebar-divider">
-
             <!-- Heading -->
             <div class="sidebar-heading">
-                Reservations
+                Feedback
             </div>
 
-            <li class="nav-item">
-                <a class="nav-link" href="./reservation.php">
-                    <i class="fas fa-fw fa-folder"></i>
-                    <span>Reservations</span></a>
-            </li>
-
-            <!-- Anomyties -->
-            <li class="nav-item">
-                <a class="nav-link" href="./inventory.php">
-                    <i class="fas fa-fw fa-chart-area"></i>
-                    <span>Equipments</span></a>
-            </li>
-            <!-- Nav Item - Charts -->
+            <!-- Nav Item - Pages Collapse Menu -->
             <li class="nav-item">
                 <a class="nav-link" href="./feedback.php">
-                    <i class="fas fa-fw fa-chart-area"></i>
+                    <i class="fas fa-fw fa-utensils"></i>
                     <span>Feedback</span></a>
             </li>
 

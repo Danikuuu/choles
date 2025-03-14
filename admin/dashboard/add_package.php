@@ -9,9 +9,9 @@ if (!isset($_SESSION["user_id"]) || $_SESSION["role"] == 0) {
 
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $packageName = $_POST['packageName'];
-    $packageDescription = $_POST['packageDescription'];
-    $packagePrice = $_POST['packagePrice'];
+    $packageName = $_POST['newPackageName'];
+    $packageDescription = $_POST['newPackageDescription'];
+    $packagePrice = $_POST['newPackagePrice'];
     $packagePeople = $_POST['packagePeople'];
     $packageMenu = $_POST['packageMenu'];
     $packagestyling = $_POST['packagestyling'];
@@ -22,6 +22,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $packageSpoon = $_POST['packageSpoon'];
     $packageFork = $_POST['packageFork'];
     $packageVenue = $_POST['packageVenue'];
+    $packageDownpayment = $_POST['packageDownpayment'];  
 
 
     // File upload setup
@@ -37,19 +38,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($_FILES["packageImage"]["error"] == 0 && in_array($fileType, $allowedTypes)) {
         if (move_uploaded_file($_FILES["packageImage"]["tmp_name"], $targetFilePath)) {
             // Insert package into database
-            $sql = "INSERT INTO package (package_name, description, package_price, people_count, menu_count, venue_styling, table_count, chair_count, glass_count, plate_count, spoon_count, fork_count, venue, image, created_at) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
+            $sql = "INSERT INTO package (package_name, description, package_price, people_count, menu_count, venue_styling, table_count, chair_count, glass_count, plate_count, spoon_count, fork_count, venue, downpayment, image, created_at) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
 
 
             $stmt = $con->prepare($sql);
             // echo 'here';
-            $stmt->bind_param("ssdiiiiiiiiiss", 
+            $stmt->bind_param("ssdiiiiiiiiiids", 
                 $packageName, $packageDescription, $packagePrice, $packagePeople, 
                 $packageMenu, $packagestyling, $packageTables, $packageChairs, $packageGlass,
-                $packagePlates, $packageSpoon, $packageFork, $packageVenue, 
+                $packagePlates, $packageSpoon, $packageFork, $packageVenue, $packageDownpayment,
                 $targetFilePath
             );
-            echo "dito";
             
             if ($stmt->execute()) {
                 $_SESSION['success'] = "Package added successfully!";

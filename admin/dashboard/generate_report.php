@@ -4,8 +4,9 @@ if (!isset($_SESSION["user_id"]) || $_SESSION["role"] == 0) {
     header("Location: index.php");
     exit();
 }
-require_once('./vendor/tecnickcom/tcpdf/tcpdf.php'); 
-require_once('./data-handling/db/connection.php'); 
+// require_once('./vendor/tecnickcom/tcpdf/tcpdf.php'); 
+require_once('../../vendor/tecnickcom/tcpdf/tcpdf.php');
+require_once('../../data-handling/db/connection.php'); 
 
 $cateringName = "CHOLES Catering Services";
 
@@ -79,16 +80,57 @@ $pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
 $pdf->SetFont('helvetica', '', 12);
 $pdf->AddPage();
 
-// Report content
+
 $html = "
-<h2 style='text-align:center;'>$cateringName</h2>
-<h3 style='text-align:center;'>Monthly Sales Report</h3>
-<hr>
-<p><strong>Sales this Month:</strong> $$totalSales</p>
-<p><strong>Sales this Year:</strong> $$totalYearlySales</p>
-<p><strong>Total Reservations this Month:</strong> $totalReservations</p>
-<p><strong>Most Ordered Menu Items:</strong> $mostOrderedMenu</p>
-<p><strong>Most Ordered Packages:</strong> $mostOrderedPackage</p>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        padding: 20px;
+        background-color: #f8f9fa;
+    }
+    .report-container {
+        background: #ffffff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    }
+    h2 {
+        text-align: center;
+        color: #2c3e50;
+        margin-bottom: 5px;
+    }
+    h3 {
+        text-align: center;
+        color: #34495e;
+        margin-bottom: 15px;
+    }
+    hr {
+        border: 1px solid #ddd;
+        margin-bottom: 20px;
+    }
+    p {
+        font-size: 16px;
+        color: #555;
+        line-height: 1.6;
+        margin: 10px 0;
+    }
+    .highlight {
+        font-weight: bold;
+        color: #d35400;
+    }
+</style>
+
+<div class='report-container'>
+    <h2>$cateringName</h2>
+    <h3>Monthly Sales Report</h3>
+    <hr>
+    <p><span class='highlight'>Sales this Month:</span> ₱$totalSales</p>
+    <p><span class='highlight'>Sales this Year:</span> ₱$totalYearlySales</p>
+    <p><span class='highlight'>Total Reservations this Month:</span> $totalReservations</p>
+    <p><span class='highlight'>Most Ordered Menu Items:</span> $mostOrderedMenu</p>
+    <p><span class='highlight'>Most Ordered Packages:</span> $mostOrderedPackage</p>
+</div>
 ";
 
 // Write content to PDF

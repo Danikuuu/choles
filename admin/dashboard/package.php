@@ -130,22 +130,15 @@ $result = $con->query($sql);
                                 <img class="img-profile rounded-circle"
                                     src="img/undraw_profile.svg">
                             </a>
+                            <!-- Dropdown - User Information -->
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
                                 aria-labelledby="userDropdown">
-                                <a class="dropdown-item" href="#">
+                                <a class="dropdown-item" href="./profile.php">
                                     <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
                                     Profile
                                 </a>
-                                <a class="dropdown-item" href="#">
-                                    <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Settings
-                                </a>
-                                <a class="dropdown-item" href="#">
-                                    <i class="fas fa-list fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Activity Log
-                                </a>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="" data-toggle="modal" data-target="#logoutModal">
+                                <a class="dropdown-item" href="../../destroy.php" data-toggle="modal" data-target="#logoutModal">
                                     <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
                                     Logout
                                 </a>
@@ -203,32 +196,37 @@ $result = $con->query($sql);
                                 <form id="addMenuForm" enctype="multipart/form-data" action="./add_package.php" method="post">
                                     <!-- Menu Name -->
                                     <div class="form-group">
-                                        <label for="packageName">Package Name</label>
-                                        <input type="text" class="form-control" id="packageName" name="packageName" required>
+                                        <label for="newPackageName">Package Name</label>
+                                        <input type="text" class="form-control" id="newPackageName" name="newPackageName" required>
                                     </div>
 
                                     <!-- Description -->
                                     <div class="form-group">
-                                        <label for="packageDescription">Description</label>
-                                        <textarea class="form-control" id="packageDescription" name="packageDescription" rows="3" required></textarea>
+                                        <label for="newPackageDescription">Description</label>
+                                        <textarea class="form-control" id="newPackageDescription" name="newPackageDescription" rows="3" required></textarea>
                                     </div>
 
                                     <!-- Price -->
                                     <div class="form-group">
-                                        <label for="packagePrice">Package Price</label>
-                                        <input type="text" class="form-control" id="packagePrice" name="packagePrice" required>
+                                        <label for="newPackagePrice">Package Price</label>
+                                        <input type="number" class="form-control" id="newPackagePrice" name="newPackagePrice" required>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="packageDownpayment">Downpayment Price</label>
+                                        <input type="number" class="form-control" id="packageDownpayment" name="packageDownpayment" required>
                                     </div>
 
                                     <!-- People Count -->
                                     <div class="form-group">
                                         <label for="packagePeople">People Count</label>
-                                        <input type="text" class="form-control" id="packagePeople" name="packagePeople" required>
+                                        <input type="number" class="form-control" id="packagePeople" name="packagePeople" required>
                                     </div>
 
                                     <!-- Number of menu -->
                                     <div class="form-group">
                                         <label for="packageMenu">Number of Menus</label>
-                                        <input type="text" class="form-control" id="packageMenu" name="packageMenu" required>
+                                        <input type="number" class="form-control" id="packageMenu" name="packageMenu" required>
                                     </div>
 
                                     <!-- Description -->
@@ -243,37 +241,37 @@ $result = $con->query($sql);
                                     <!-- Table Count -->
                                     <div class="form-group">
                                         <label for="packageTables">Number of Tables</label>
-                                        <input type="text" class="form-control" id="packageTables" name="packageTables" required>
+                                        <input type="number" class="form-control" id="packageTables" name="packageTables" required>
                                     </div>
 
                                     <!-- Chair count -->
                                     <div class="form-group">
                                         <label for="packageChairs">Number of Chairs</label>
-                                        <input type="text" class="form-control" id="packageChairs" name="packageChairs" required>
+                                        <input type="number" class="form-control" id="packageChairs" name="packageChairs" required>
                                     </div>
 
                                     <!-- Chair count -->
                                     <div class="form-group">
                                         <label for="packageGlass">Number of Glass</label>
-                                        <input type="text" class="form-control" id="packageGlass" name="packageGlass" required>
+                                        <input type="number" class="form-control" id="packageGlass" name="packageGlass" required>
                                     </div>
 
                                     <!-- Plate count -->
                                     <div class="form-group">
                                         <label for="packagePlates">Number of Plates</label>
-                                        <input type="text" class="form-control" id="packagePlates" name="packagePlates" required>
+                                        <input type="number" class="form-control" id="packagePlates" name="packagePlates" required>
                                     </div>
 
                                     <!-- Spoon count -->
                                     <div class="form-group">
                                         <label for="packageSpoon">Number of Spoon</label>
-                                        <input type="text" class="form-control" id="packageSpoon" name="packageSpoon" required>
+                                        <input type="number" class="form-control" id="packageSpoon" name="packageSpoon" required>
                                     </div>
 
                                     <!-- Fork count -->
                                     <div class="form-group">
                                         <label for="packageFork">Number of Fork</label>
-                                        <input type="text" class="form-control" id="packageFork" name="packageFork" required>
+                                        <input type="number" class="form-control" id="packageFork" name="packageFork" required>
                                     </div>
 
                                     <!-- Venue -->
@@ -310,6 +308,7 @@ $result = $con->query($sql);
                                                 <div class="h5 mb-0 font-weight-bold text-gray-800">
                                                     ₱<?php echo htmlspecialchars($row['package_price']); ?>
                                                 </div>
+
                                                 <span class="badge badge-success">
                                                     <i class="fas fa-users"></i> <?php echo htmlspecialchars($row['people_count']); ?>
                                                 </span>
@@ -339,6 +338,7 @@ $result = $con->query($sql);
                                                 data-id="<?php echo htmlspecialchars($row['id']); ?>"
                                                 data-name="<?php echo isset($row['package_name']) ? htmlspecialchars($row['package_name']) : ''; ?>"
                                                 data-price="<?php echo isset($row['package_price']) ? htmlspecialchars($row['package_price']) : ''; ?>"
+                                                data-downpayment="<?php echo isset($row['downpayment']) ? htmlspecialchars($row['downpayment']) : ''; ?>"
                                                 data-people="<?php echo isset($row['people_count']) ? htmlspecialchars($row['people_count']) : ''; ?>"
                                                 data-menu="<?php echo isset($row['menu_count']) ? htmlspecialchars($row['menu_count']) : ''; ?>"
                                                 data-venue-styling="<?php echo isset($row['venue_styling']) ? htmlspecialchars($row['venue_styling']) : ''; ?>"
@@ -391,6 +391,11 @@ $result = $con->query($sql);
                     </div>
 
                     <div class="form-group">
+                        <label for="editPackageDownpayment">Downpayment</label>
+                        <input type="text" class="form-control" id="editPackageDownpayment" name="editPackageDownpayment">
+                    </div>
+
+                    <div class="form-group">
                         <label for="peopleCount">People Count</label>
                         <input type="number" class="form-control" id="peopleCount" name="peopleCount">
                     </div>
@@ -402,7 +407,10 @@ $result = $con->query($sql);
 
                     <div class="form-group">
                         <label for="venueStyling">Venue Styling</label>
-                        <input type="text" class="form-control" id="venueStyling" name="venueStyling">
+                        <select name="venueStyling" id="venueStyling" class="form-control">
+                            <option value="1">Yes</option>
+                            <option value="0">No</option>
+                        </select>
                     </div>
 
                     <div class="form-group">
@@ -420,8 +428,9 @@ $result = $con->query($sql);
                         <input type="text" class="form-control" id="venue" name="venue">
                     </div>
 
-                    <div class="form-group text-center">
-                        <img id="previewImage" src="" alt="Package Image" style="width: 100px; height: 100px; object-fit: cover;">
+                    <div class="form-group">
+                        <label for="image">Upload image</label> <br>
+                        <input type="file" name="packageImage" id="packageImage">
                     </div>
 
                     <button type="submit" class="btn btn-primary">Save Changes</button>
@@ -494,9 +503,16 @@ $result = $con->query($sql);
             let packageId = $(this).data("id");
             let packageName = $(this).data("name");
             let packagePrice = $(this).data("price");
+            let packageDownpayment = $(this).data("downpayment");
             let peopleCount = $(this).data("people");
             let menuCount = $(this).data("menu");
             let venueStyling = $(this).data("venue-styling");
+
+            // Set default value if none is selected
+            if (venueStyling === "" || venueStyling === undefined) {
+                venueStyling = 0; // Default to "No"
+            }
+
             let tableCount = $(this).data("table");
             let chairCount = $(this).data("chair");
             let venue = $(this).data("venue");
@@ -504,12 +520,13 @@ $result = $con->query($sql);
 
             // Log values for debugging
             console.log("Menu Name:", packageName);
-            console.log("Price:", packagePrice);
+            console.log("Downpayment:", packageDownpayment);
 
             // Populate modal fields
             $("#packageId").val(packageId);
             $("#packageName").val(packageName);
             $("#packagePrice").val(packagePrice);
+            $("#editPackageDownpayment").val(packageDownpayment);
             $("#peopleCount").val(peopleCount);
             $("#menuCount").val(menuCount);
             $("#venueStyling").val(venueStyling);

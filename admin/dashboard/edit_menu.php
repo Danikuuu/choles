@@ -14,12 +14,9 @@ if (!isset($_SESSION["user_id"]) || $_SESSION["role"] == 0) {
 require_once '../../data-handling/db/connection.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Check if menuId is provided
     if (empty($_POST['menuId'])) {
         die("Error: Menu ID is missing.");
     }
-
-    // echo "kupal";
 
     $menuId = $con->real_escape_string($_POST['menuId']);
 
@@ -31,56 +28,59 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         die("SQL Error: " . $con->error);
     }
 
-    // echo "kupal";
-
     if ($result->num_rows > 0) {
         $menu = $result->fetch_assoc();
-        
+
+        // Fix category issue
         $menuName = !empty($_POST['menuName']) ? $con->real_escape_string($_POST['menuName']) : $menu['name'];
         $menuDescription = !empty($_POST['menuDescription']) ? $con->real_escape_string($_POST['menuDescription']) : $menu['description'];
-        $menuCategory = !empty($_POST['menuCategory']) ? $con->real_escape_string($_POST['menuCategory']) : $menu['category'];
-        
+        $editMenuCategory = !empty($_POST['editMenuCategory']) ? $con->real_escape_string($_POST['editMenuCategory']) : $menu['category'];
+
         $imageQuery = "";
 
         if (!empty($_FILES["menuImage"]["name"])) {
             $targetDir = "uploads/";
             $fileName = basename($_FILES["menuImage"]["name"]);
-            $$targetFilePath = $targetDir . "_" . time() . "_" . $fileName;;
+            $targetFilePath = $targetDir . "_" . time() . "_" . $fileName; // ✅ Fixed variable
             $fileType = pathinfo($targetFilePath, PATHINFO_EXTENSION);
 
             $allowedTypes = array("jpg", "jpeg", "png", "gif");
             if (in_array(strtolower($fileType), $allowedTypes)) {
                 if (move_uploaded_file($_FILES["menuImage"]["tmp_name"], $targetFilePath)) {
-                    $imageQuery = ", image='$fileName'";
+                    $imageQuery = ", image='$targetFilePath'"; // ✅ Save correct path
                 } else {
                     $_SESSION['error'] = "Error uploading file!";
                     header("Location: menu.php");
+                    exit();
                 }
             } else {
-                $_SESSION['error']  = "Only JPG, JPEG, PNG & GIF files are allowed.";
+                $_SESSION['error'] = "Only JPG, JPEG, PNG & GIF files are allowed.";
                 header("Location: menu.php");
+                exit();
             }
         }
 
+        // Fix SQL query
         $sql = "UPDATE menu SET 
                     name='$menuName', 
                     description='$menuDescription', 
-                    category='$menuCategory' 
+                    category='$editMenuCategory' 
                     $imageQuery 
                 WHERE id='$menuId'";
-
-        echo "<pre>Executing SQL: $sql</pre>";
 
         if ($con->query($sql) === TRUE) {
             $_SESSION['success'] = "Menu updated successfully!";
             header("Location: menu.php");
+            exit();
         } else {
-            $_SESSION['error'] = "An error occur!";
+            $_SESSION['error'] = "An error occurred: " . $con->error;
             header("Location: menu.php");
+            exit();
         }
     } else {
-        $_SESSION['error'] = "An error occur!";
+        $_SESSION['error'] = "Menu not found!";
         header("Location: menu.php");
+        exit();
     }
 
     $con->close();

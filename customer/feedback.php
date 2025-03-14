@@ -6,13 +6,6 @@ if (!isset($_SESSION["user_id"]) || $_SESSION["role"] == 1) {
     exit();
 }
 
-require_once '../data-handling/db/connection.php';
-
-$sql = "SELECT id, name, description, category, image, created_at FROM menu";
-$result = $con->query($sql);
-
-$category = "SELECT DISTINCT category FROM menu ORDER BY category ASC";
-$category_result = $con->query($category);
 ?>
 
 
@@ -26,7 +19,7 @@ $category_result = $con->query($category);
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>CHOLES - Menu</title>
+    <title>Feedback</title>
 
     <!-- Custom fonts for this template-->
     <link rel="stylesheet" href="../admin//dashboard/vendor/fontawesome-free/css/all.min.css">
@@ -38,6 +31,28 @@ $category_result = $con->query($category);
     <link rel="stylesheet" href="../admin/dashboard/css//sb-admin-2.min.css">
 
 </head>
+
+<style>
+    .rating {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: flex-start;
+    }
+    .rating input {
+        display: none;
+    }
+    .rating label {
+        font-size: 30px;
+        color: gray;
+        cursor: pointer;
+        transition: color 0.3s;
+    }
+    .rating input:checked ~ label,
+    .rating label:hover,
+    .rating label:hover ~ label {
+        color: gold;
+    }
+</style>
 
 <body id="page-top">
 
@@ -59,7 +74,7 @@ $category_result = $con->query($category);
             <hr class="sidebar-divider my-0">
 
             <!-- Nav Item - Dashboard -->
-            <li class="nav-item active">
+            <li class="nav-item">
                 <a class="nav-link" href="index.php">
                     <i class="fas fa-fw fa-tachometer-alt"></i>
                     <span>Menu</span></a>
@@ -86,13 +101,16 @@ $category_result = $con->query($category);
                     <span>Reservation History</span></a>
             </li>
 
+            <!-- Divider -->
+            <hr class="sidebar-divider">
+
             <!-- Heading -->
             <div class="sidebar-heading">
                 Feedback
             </div>
 
             <!-- Nav Item - Pages Collapse Menu -->
-            <li class="nav-item">
+            <li class="nav-item active">
                 <a class="nav-link" href="./feedback.php">
                     <i class="fas fa-fw fa-utensils"></i>
                     <span>Feedback</span></a>
@@ -151,37 +169,63 @@ $category_result = $con->query($category);
                 <!-- End of Topbar -->
                 <div class="container-fluid">
                 <div class="d-sm-flex align-items-center justify-content-between mb-4">
-                        <h1 class="h3 mb-0 text-gray-800">Menu Items</h1>
+                        <h1 class="h3 mb-0 text-gray-800">Feedback</h1>
                     </div>
 
-                <div class="row justify-content-center align-items-center p-5">
-                    <?php if ($result->num_rows > 0): ?>
-                        <?php while ($row = $result->fetch_assoc()): ?>
-                            <div class="col-xl-3 col-md-6 mb-4">
-                                <div class="card shadow h-100 py-2">
-                                    <div class="card-body">
-                                        <div class="row no-gutters align-items-center">
-                                            <div class="col mr-2">
-                                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                                    <?php echo htmlspecialchars($row['name']); ?>
-                                                </div>
-                                                <span class="badge badge-success">
-                                                    <?php echo htmlspecialchars($row['category']); ?>
-                                                </span>
-                                            </div>
-                                            <div class="col-auto">
-                                                <img src="../admin/dashboard/<?php echo htmlspecialchars($row['image']); ?>" alt="Menu Image" style="width: 150px; height: 100px; object-fit: cover;">
-                                            </div>
-                                        </div>
+                    <div class="d-flex justify-content-center align-items-center">
+                <div class="p-3" style="z-index: 11">
+                            <div id="toastMessage" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                                <div class="d-flex">
+                                    <div class="toast-body">
+                                        <?php
+                                        if (isset($_SESSION['success'])) {
+                                            echo $_SESSION['success'];
+                                            unset($_SESSION['success']); // Clear message after showing
+                                        } elseif (isset($_SESSION['error'])) {
+                                            echo $_SESSION['error'];
+                                            unset($_SESSION['error']); // Clear message after showing
+                                        }
+                                        ?>
                                     </div>
+                                    <button type="button" class="btn me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"><i class="fas fa-times"></i></button>
                                 </div>
                             </div>
-                        <?php endwhile; ?>
-                    <?php else: ?>
-                        <div class="col-12 text-center">
-                            <p>No menus found.</p>
                         </div>
-                    <?php endif; ?>
+               </div>
+
+                <div class="row justify-content-center align-items-center p-5">
+                    <form action="./submit_feedback.php" method="post" enctype="multipart/form-data" class="p-3 border rounded shadow-sm bg-light">
+                        <h5 class="mb-3">Can you rate your experience?</h5>
+
+                        <!-- Star Rating -->
+                        <div class="rating d-flex flex-row-reverse justify-content-start">
+                            <input type="radio" name="rating" id="star5" value="5">
+                            <label for="star5">&#9733;</label>
+
+                            <input type="radio" name="rating" id="star4" value="4">
+                            <label for="star4">&#9733;</label>
+
+                            <input type="radio" name="rating" id="star3" value="3">
+                            <label for="star3">&#9733;</label>
+
+                            <input type="radio" name="rating" id="star2" value="2">
+                            <label for="star2">&#9733;</label>
+
+                            <input type="radio" name="rating" id="star1" value="1">
+                            <label for="star1">&#9733;</label>
+                        </div>
+
+                        <!-- Comment Box -->
+                        <div class="mt-3">
+                            <label for="comment" class="form-label">Leave a comment:</label>
+                            <textarea name="comment" id="comment" class="form-control" rows="4" placeholder="Share your experience..." required></textarea>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button type="submit" class="btn btn-success mt-3 w-100">Submit Feedback</button>
+                    </form>
+
+
                 </div>
 
                 </div>

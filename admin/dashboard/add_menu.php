@@ -7,9 +7,9 @@ if (!isset($_SESSION["user_id"]) || $_SESSION["role"] == 0) {
 }
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $menuName = $_POST['menuName'];
-    $menuDescription = $_POST['menuDescription'];
-    $menuCategory = $_POST['menuCategory'];
+    $menuName = $_POST['addMenuName'];
+    $menuDescription = $_POST['addMenuDescription'];
+    $menuCategory = $_POST['addMenuCategory'];
 
     $targetDir = "uploads/"; 
 
@@ -24,7 +24,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if (move_uploaded_file($_FILES["menuImage"]["tmp_name"], $targetFilePath)) {
             $sql = "INSERT INTO menu (name, description, category, image, created_at) VALUES (?, ?, ?, ?, NOW())";
             $stmt = $con->prepare($sql);
-            $stmt->bind_param("sss", $menuName, $menuDescription, $menuCategory, $targetFilePath);
+            $stmt->bind_param("ssss", $menuName, $menuDescription, $menuCategory, $targetFilePath);
             if ($stmt->execute()) {
                 $_SESSION['success'] = "Menu added successfully!";
             } else {

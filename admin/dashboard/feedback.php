@@ -10,27 +10,16 @@ if (!isset($_SESSION["user_id"]) || $_SESSION["role"] == 0) {
 require_once '../../data-handling/db/connection.php';
 
 $sql = "SELECT 
-            r.id AS reservation_id,
-            cpm.id AS customer_package_id,
-            CONCAT(c.fname, ' ', c.lname) AS customer_name,
-            r.event_date,
-            r.status,
-            r.downpayment_price,
-            r.down_payment,
-            p.package_name,
-            p.package_price,
-            p.people_count,
-            p.venue,
-            m.name AS menu_name,
-            m.description AS menu_description,
-            m.category AS menu_category,
-            m.image AS menu_image
-        FROM customer_package_menu cpm
-        JOIN reservations r ON cpm.id = r.customer_package_id 
-        JOIN package p ON cpm.package_id = p.id
-        JOIN menu m ON cpm.menu_id = m.id
-        JOIN user c ON cpm.customer_id = c.id
-        ORDER BY r.event_date DESC;";
+            u.id AS user_id,
+            f.id AS feedback_id,
+            CONCAT(u.fname, ' ', u.lname) AS customer_name,
+            f.rating,
+            f.comment,
+            f.created_at
+        FROM feedback f
+        JOIN user u ON f.user_id = u.id
+        ORDER BY f.created_at DESC;";
+
 
 $result = $con->query($sql);
 
@@ -108,7 +97,7 @@ $result = $con->query($sql);
                 Reservations
             </div>
 
-            <li class="nav-item active">
+            <li class="nav-item">
                 <a class="nav-link" href="./reservation.php">
                     <i class="fas fa-fw fa-folder"></i>
                     <span>Reservations</span></a>
@@ -157,7 +146,6 @@ $result = $con->query($sql);
                                 <img class="img-profile rounded-circle"
                                     src="img/undraw_profile.svg">
                             </a>
-                            <!-- Dropdown - User Information -->
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
                                 aria-labelledby="userDropdown">
                                 <a class="dropdown-item" href="./profile.php">
@@ -212,14 +200,9 @@ $result = $con->query($sql);
                 <thead>
                     <tr>
                         <th>Name</th>
-                        <th>Package</th>
-                        <th>Venue</th>
-                        <th>Number of People</th>
-                        <th>Date</th>
-                        <th>Price</th>
-                        <th>Downpayment</th>
-                        <th>Status</th>
-                        <th>Action</th>
+                        <th>Rating</th>
+                        <th>Comment</th>
+                        <th>Created At</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -230,55 +213,9 @@ $result = $con->query($sql);
 
                             echo "<tr>";
                             echo "<td>" . htmlspecialchars($row['customer_name']) . "</td>";
-                            echo "<td>" . htmlspecialchars($row['package_name']) . "</td>";
-                            echo "<td>" . htmlspecialchars($row['venue']) . "</td>";
-                            echo "<td>" . htmlspecialchars($row['people_count']) . "</td>";
-                            echo "<td>" . htmlspecialchars($row['event_date']) . "</td>";
-                            echo "<td>" . htmlspecialchars($row['package_price']) . "</td>";
-                            echo "<td>" . htmlspecialchars($row['downpayment_price']) . "</td>";
-                            echo "<td>" . $status . "</td>";
-                            echo "<td>
-                                    <button class='btn btn-success btn-sm view-btn'
-                                        data-customer='" . htmlspecialchars($row['customer_name']) . "' 
-                                        data-package='" . htmlspecialchars($row['package_name']) . "' 
-                                        data-venue='" . htmlspecialchars($row['venue']) . "' 
-                                        data-event-date='" . htmlspecialchars($row['event_date']) . "' 
-                                        data-price='" . htmlspecialchars($row['package_price']) . "' 
-                                        data-downpayment='" . htmlspecialchars($row['downpayment_price']) . "' 
-                                        data-status='" . $status . "'
-                                        data-image='" . htmlspecialchars($row['down_payment']) . "'>
-                                        View
-                                    </button>";
-
-                            // Display "Approve" button only if status is NOT "cancelled" or "completed"
-                            if ($status !== 'cancelled' && $status !== 'completed') {
-                                echo "<form method='POST' action='update_status.php' style='display:inline;'>
-                                        <input type='hidden' name='reservationId' value='" . htmlspecialchars($row['reservation_id']) . "'>
-                                        <input type='hidden' name='status' value='approved'>
-                                        <button type='submit' class='btn btn-success btn-sm'>Approve</button>
-                                    </form>";
-                            }
-
-                            // Display "Complete" button only if status is NOT "cancelled" or "completed"
-                            if ($status !== 'cancelled' && $status !== 'completed') {
-                                echo "<form method='POST' action='update_status.php' style='display:inline;'>
-                                        <input type='hidden' name='reservationId' value='" . htmlspecialchars($row['reservation_id']) . "'>
-                                        <input type='hidden' name='status' value='completed'>
-                                        <button type='submit' class='btn btn-success btn-sm'>Complete</button>
-                                    </form>";
-                            }
-
-                            // Display "Cancel" button only if status is NOT "approved" or "completed"
-                            if ($status !== 'approved' && $status !== 'completed') {
-                                echo "<form method='POST' action='update_status.php' style='display:inline;'>
-                                        <input type='hidden' name='reservationId' value='" . htmlspecialchars($row['reservation_id']) . "'>
-                                        <input type='hidden' name='status' value='cancelled'>
-                                        <button type='submit' class='btn btn-info btn-sm'>Cancel</button>
-                                    </form>";
-                            }
-
-                            echo "</td>";
-                            echo "</tr>";
+                            echo "<td>" . htmlspecialchars($row['rating']) . "</td>";
+                            echo "<td>" . htmlspecialchars($row['comment']) . "</td>";
+                            echo "<td>" . htmlspecialchars($row['created_at']) . "</td>";
                         }
                     } else {
                         echo "<tr><td colspan='9' class='text-center'>No records found</td></tr>";
@@ -287,55 +224,6 @@ $result = $con->query($sql);
                 </tbody>
 
             </table>
-        </div>
-    </div>
-</div>
-            <!-- View Details Modal -->
-<div class="modal fade" id="viewModal" tabindex="-1" aria-labelledby="viewModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="viewModalLabel">Reservation Details</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <table class="table table-bordered">
-                    <tr>
-                        <th>Customer Name</th>
-                        <td id="modalCustomer"></td>
-                    </tr>
-                    <tr>
-                        <th>Package Name</th>
-                        <td id="modalPackage"></td>
-                    </tr>
-                    <tr>
-                        <th>Venue</th>
-                        <td id="modalVenue"></td>
-                    </tr>
-                    <tr>
-                        <th>Event Date</th>
-                        <td id="modalEventDate"></td>
-                    </tr>
-                    <tr>
-                        <th>Package Price</th>
-                        <td id="modalPrice"></td>
-                    </tr>
-                    <tr>
-                        <th>Downpayment</th>
-                        <td id="modalDownpayment"></td>
-                    </tr>
-                    <tr>
-                        <th>Status</th>
-                        <td id="modalStatus"></td>
-                    </tr>
-                    <tr>
-                        <th>Downpayment Proof</th>
-                        <td id="modalImage"></td>
-                    </tr>
-                </table>
-            </div>
         </div>
     </div>
 </div>
@@ -388,51 +276,6 @@ $result = $con->query($sql);
 
     <script src="js/sb-admin-2.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
-$(document).ready(function () {
-    $(".view-btn").click(function () {
-        // Get data attributes from the button
-        let customer = $(this).data("customer");
-        let package = $(this).data("package");
-        let venue = $(this).data("venue");
-        let eventDate = $(this).data("event-date");
-        let price = $(this).data("price");
-        let downpayment = $(this).data("downpayment");
-        let status = $(this).data("status");
-        let image = $(this).data("image");
-
-        // Set modal content
-        $("#modalCustomer").text(customer);
-        $("#modalPackage").text(package);
-        $("#modalVenue").text(venue);
-        $("#modalEventDate").text(eventDate);
-        $("#modalPrice").text(price);
-        $("#modalDownpayment").text(downpayment);
-        $("#modalStatus").text(status);
-
-        // Display image if available
-        if (image) {
-            $("#modalImage").html(`<img src="../../customer/${image}" class="img-fluid" style="max-width: 300px; alt="Downpayment Proof">`);
-        } else {
-            $("#modalImage").html("No image available");
-        }
-
-        // Show modal
-        $("#viewModal").modal("show");
-    });
-});
-</script>
-
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        var toastEl = document.getElementById('toastMessage');
-        if (toastEl && toastEl.textContent.trim() !== "") {
-            var toast = new bootstrap.Toast(toastEl);
-            toast.show();
-        }
-    });
-    </script>
 
 </body>
 

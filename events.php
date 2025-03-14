@@ -5,12 +5,10 @@
 <head>
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
-  <title>Events - Mentor Bootstrap Template</title>
+  <title>Events - Gallery</title>
   <meta name="description" content="">
   <meta name="keywords" content="">
 
-  <!-- Favicons -->
-  <link href="assets/img/favicon.png" rel="icon">
   <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">
 
   <!-- Fonts -->
@@ -50,9 +48,9 @@
         <ul>
           <li><a href="index.php">Home<br></a></li>
           <li><a href="about.php">About Us</a></li>
-          <li><a href="courses.php">Catering</a></li>
+          <li><a href="catering.php">Catering</a></li>
           <li><a href="events.php" class="active">Event Styling</a></li>
-          <li><a href="contact.php">Contact Us</a></li>
+          <!-- <li><a href="contact.php">Contact Us</a></li> -->
           <li><a href="login.php">Login</a></li>
         </ul>
         <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
@@ -96,27 +94,78 @@
           <div class="col-md-6 d-flex align-items-stretch">
             <div class="card">
               <div class="card-img">
-                <img src="assets/img/events-item-1.jpg" alt="...">
+                <img src="assets/img/events-picture-1.webp" alt="...">
               </div>
               <div class="card-body">
-                <h5 class="card-title"><a href="">Introduction to webdesign</a></h5>
-                <p class="fst-italic text-center">Sunday, September 26th at 7:00 pm</p>
-                <p class="card-text">Lorem ipsum dolor sit amet, consectetur elit, sed do eiusmod tempor ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat</p>
+                <h5 class="card-title"><a href="">Wedding Designs</a></h5>
+                <p class="fst-italic text-center">Sunday, September 26th 2024 at 3:00 pm</p>
+                <p class="card-text">Explore our latest wedding designs and inspirations.</p>
               </div>
             </div>
           </div>
           <div class="col-md-6 d-flex align-items-stretch">
             <div class="card">
               <div class="card-img">
-                <img src="assets/img/events-item-2.jpg" alt="...">
+                <img src="assets/img/birthday.jpg" alt="...">
               </div>
               <div class="card-body">
-                <h5 class="card-title"><a href="">Marketing Strategies</a></h5>
+                <h5 class="card-title"><a href="">Birthday Designs</a></h5>
                 <p class="fst-italic text-center">Sunday, November 15th at 7:00 pm</p>
                 <p class="card-text">Sed ut perspiciatis unde omnis iste natus error sit voluptatem doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo</p>
               </div>
             </div>
+          </div>
 
+          <div class="col-md-6 d-flex align-items-stretch">
+            <div class="card">
+              <div class="card-img">
+                <img src="assets/img/corporate.jpg" alt="...">
+              </div>
+              <div class="card-body">
+                <h5 class="card-title"><a href="">Corporate Events</a></h5>
+                <p class="fst-italic text-center">Sunday, November 15th at 7:00 pm</p>
+                <p class="card-text">Sed ut perspiciatis unde omnis iste natus error sit voluptatem doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6 d-flex align-items-stretch">
+            <div class="card">
+              <div class="card-img">
+                <img src="assets/img/christmasparty.jpg" alt="...">
+              </div>
+              <div class="card-body">
+                <h5 class="card-title"><a href="">Christmas Party</a></h5>
+                <p class="fst-italic text-center">Sunday, November 15th at 7:00 pm</p>
+                <p class="card-text">Sed ut perspiciatis unde omnis iste natus error sit voluptatem doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6 d-flex align-items-stretch">
+            <div class="card">
+              <div class="card-img">
+                <img src="assets/img/hallowin.jpg" alt="...">
+              </div>
+              <div class="card-body">
+                <h5 class="card-title"><a href="">Halloween Party</a></h5>
+                <p class="fst-italic text-center">Sunday, November 15th at 7:00 pm</p>
+                <p class="card-text">Sed ut perspiciatis unde omnis iste natus error sit voluptatem doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6 d-flex align-items-stretch">
+            <div class="card">
+              <div class="card-img">
+                <img src="assets/img/school.jpg" alt="...">
+              </div>
+              <div class="card-body">
+                <h5 class="card-title"><a href="">School Party</a></h5>
+                <p class="fst-italic text-center">Sunday, November 15th at 7:00 pm</p>
+                <p class="card-text">Sed ut perspiciatis unde omnis iste natus error sit voluptatem doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo</p>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -132,19 +181,17 @@
       <div class="row gy-4">
         <div class="col-lg-4 col-md-6 footer-about">
           <a href="index.html" class="logo d-flex align-items-center">
-            <span class="sitename">Mentor</span>
+            <span class="sitename">CHOLES Catering Services</span>
           </a>
           <div class="footer-contact pt-3">
-            <p>A108 Adam Street</p>
-            <p>New York, NY 535022</p>
-            <p class="mt-3"><strong>Phone:</strong> <span>+1 5589 55488 55</span></p>
-            <p><strong>Email:</strong> <span>info@example.com</span></p>
+            <p>Cabanatuan</p>
+            <p>Nueva Ecija, Philippines</p>
+            <p class="mt-3"><strong>Phone:</strong> <span>+63 912-345-6789</span></p>
+            <p><strong>Email:</strong> <span>cholescatering@gmail.com</span></p>
           </div>
           <div class="social-links d-flex mt-4">
-            <a href=""><i class="bi bi-twitter-x"></i></a>
             <a href=""><i class="bi bi-facebook"></i></a>
             <a href=""><i class="bi bi-instagram"></i></a>
-            <a href=""><i class="bi bi-linkedin"></i></a>
           </div>
         </div>
 
@@ -162,37 +209,19 @@
         <div class="col-lg-2 col-md-3 footer-links">
           <h4>Our Services</h4>
           <ul>
-            <li><a href="#">Web Design</a></li>
-            <li><a href="#">Web Development</a></li>
-            <li><a href="#">Product Management</a></li>
-            <li><a href="#">Marketing</a></li>
-            <li><a href="#">Graphic Design</a></li>
+            <li><a href="#">Catering</a></li>
+            <li><a href="#">Venue Styling</a></li>
+            <li><a href="#">Menu Choosing</a></li>
+            <li><a href="#">Chairs and Tables</a></li>
+            <li><a href="#">And many more</a></li>
           </ul>
-        </div>
-
-        <div class="col-lg-4 col-md-12 footer-newsletter">
-          <h4>Our Newsletter</h4>
-          <p>Subscribe to our newsletter and receive the latest news about our products and services!</p>
-          <form action="forms/newsletter.php" method="post" class="php-email-form">
-            <div class="newsletter-form"><input type="email" name="email"><input type="submit" value="Subscribe"></div>
-            <div class="loading">Loading</div>
-            <div class="error-message"></div>
-            <div class="sent-message">Your subscription request has been sent. Thank you!</div>
-          </form>
         </div>
 
       </div>
     </div>
 
     <div class="container copyright text-center mt-4">
-      <p>© <span>Copyright</span> <strong class="px-1 sitename">Mentor</strong> <span>All Rights Reserved</span></p>
-      <div class="credits">
-        <!-- All the links in the footer should remain intact. -->
-        <!-- You can delete the links only if you've purchased the pro version. -->
-        <!-- Licensing information: https://bootstrapmade.com/license/ -->
-        <!-- Purchase the pro version with working PHP/AJAX contact form: [buy-url] -->
-        Designed by <a href="https://bootstrapmade.com/">BootstrapMade</a> Distributed by <a href=“https://themewagon.com>ThemeWagon
-      </div>
+      <p>©  <strong class="px-1 sitename">CHOLES</strong> <span>All Rights Reserved</span></p>
     </div>
 
   </footer>
