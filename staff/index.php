@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-if (!isset($_SESSION["user_id"]) || $_SESSION["role"] == 1 || $_SESSION["role"] == 2) {
+if (!isset($_SESSION["user_id"]) || $_SESSION["role"] == 1 || $_SESSION["role"] == 0) {
     header("Location: ../index.php");
     exit();
 }
@@ -47,54 +47,54 @@ $category_result = $con->query($category);
         <!-- Sidebar -->
         <ul class="navbar-nav sidebar sidebar-dark accordion" id="accordionSidebar" style="background-color:  #059652;">
 
-            <!-- Sidebar - Brand -->
-            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.html">
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.php">
                 <div class="sidebar-brand-icon rotate-n-15">
                     <i class="fas fa-laugh-wink"></i>
                 </div>
-                <div class="sidebar-brand-text mx-3">CHOLES <sup>Catering</sup></div>
+                <div class="sidebar-brand-text mx-3">CHOLES <sup>Admin</sup></div>
             </a>
 
-            <!-- Divider -->
             <hr class="sidebar-divider my-0">
 
-            <!-- Nav Item - Dashboard -->
+            <hr class="sidebar-divider">
+
+            <div class="sidebar-heading">
+                Menu Management
+            </div>
+
             <li class="nav-item active">
-                <a class="nav-link" href="index.php">
-                    <i class="fas fa-fw fa-tachometer-alt"></i>
+                <a class="nav-link" href="./index.php">
+                    <i class="fas fa-fw fa-utensils"></i>
                     <span>Menu</span></a>
             </li>
 
-            <!-- Divider -->
+            <li class="nav-item">
+                <a class="nav-link" href="./package.php">
+                    <i class="fas fa-fw fa-utensils"></i>
+                    <span>Packages</span></a>
+            </li>
+
             <hr class="sidebar-divider">
 
-            <!-- Heading -->
             <div class="sidebar-heading">
                 Reservations
             </div>
 
-            <!-- Nav Item - Pages Collapse Menu -->
             <li class="nav-item">
                 <a class="nav-link" href="./reservation.php">
-                    <i class="fas fa-fw fa-utensils"></i>
+                    <i class="fas fa-fw fa-folder"></i>
                     <span>Reservations</span></a>
             </li>
 
-            <li class="nav-item">
-                <a class="nav-link" href="./reservation_history.php">
-                    <i class="fas fa-fw fa-utensils"></i>
-                    <span>Reservation History</span></a>
-            </li>
+            <hr class="sidebar-divider">
 
-            <!-- Heading -->
             <div class="sidebar-heading">
                 Feedback
             </div>
 
-            <!-- Nav Item - Pages Collapse Menu -->
-            <li class="nav-item">
+            <li class="nav-item ">
                 <a class="nav-link" href="./feedback.php">
-                    <i class="fas fa-fw fa-utensils"></i>
+                    <i class="fas fa-fw fa-chart-area"></i>
                     <span>Feedback</span></a>
             </li>
 

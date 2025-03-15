@@ -7,13 +7,13 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 // Check if user is logged in and an admin
-if (!isset($_SESSION["user_id"]) || $_SESSION["role"] == 0 || $_SESSION["role"] == 2) {
-    header("Location: ../../index.php"); // Redirect to home or login
+if (!isset($_SESSION["user_id"]) || $_SESSION["role"] == 0 || $_SESSION["role"] == 1) {
+    header("Location: ../index.php"); // Redirect to home or login
     exit();
 }
 
-require_once '../../data-handling/db/connection.php';
-require '../../vendor/autoload.php';
+require_once '../data-handling/db/connection.php';
+require '../vendor/autoload.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;

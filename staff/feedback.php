@@ -1,15 +1,25 @@
 <?php
 session_start();
 
-if (!isset($_SESSION["user_id"]) || $_SESSION["role"] == 0 || $_SESSION["role"] == 2) {
-    header("Location: ../../index.php"); // Redirect to home or login
+if (!isset($_SESSION["user_id"]) || $_SESSION["role"] == 0 || $_SESSION["role"] == 1 ) {
+    header("Location: ../index.php"); // Redirect to home or login
     exit();
 }
 
 
-require_once '../../data-handling/db/connection.php';
+require_once '../data-handling/db/connection.php';
 
-$sql = "SELECT * from user";
+$sql = "SELECT 
+            u.id AS user_id,
+            f.id AS feedback_id,
+            CONCAT(u.fname, ' ', u.lname) AS customer_name,
+            f.rating,
+            f.comment,
+            f.created_at
+        FROM feedback f
+        JOIN user u ON f.user_id = u.id
+        ORDER BY f.created_at DESC;";
+
 
 $result = $con->query($sql);
 
@@ -33,12 +43,13 @@ $result = $con->query($sql);
 
     <title>CHOLES Admin - Menu</title>
 
-    <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="../admin//dashboard/vendor/fontawesome-free/css/all.min.css">
     <link
         href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
         rel="stylesheet">
 
-    <link href="css/sb-admin-2.min.css" rel="stylesheet">
+    <!-- Custom styles for this template-->
+    <link rel="stylesheet" href="../admin/dashboard/css//sb-admin-2.min.css">
 
 </head>
 
@@ -48,7 +59,7 @@ $result = $con->query($sql);
 
         <ul class="navbar-nav sidebar sidebar-dark accordion" id="accordionSidebar" style="background-color:  #059652;">
 
-            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.html">
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.php">
                 <div class="sidebar-brand-icon rotate-n-15">
                     <i class="fas fa-laugh-wink"></i>
                 </div>
@@ -57,12 +68,6 @@ $result = $con->query($sql);
 
             <hr class="sidebar-divider my-0">
 
-            <li class="nav-item">
-                <a class="nav-link" href="index.php">
-                    <i class="fas fa-fw fa-tachometer-alt"></i>
-                    <span>Dashboard</span></a>
-            </li>
-
             <hr class="sidebar-divider">
 
             <div class="sidebar-heading">
@@ -70,7 +75,7 @@ $result = $con->query($sql);
             </div>
 
             <li class="nav-item">
-                <a class="nav-link" href="./menu.php">
+                <a class="nav-link" href="./index.php">
                     <i class="fas fa-fw fa-utensils"></i>
                     <span>Menu</span></a>
             </li>
@@ -93,30 +98,18 @@ $result = $con->query($sql);
                     <span>Reservations</span></a>
             </li>
 
-            <!-- Anomyties -->
-            <li class="nav-item">
-                <a class="nav-link" href="./inventory.php">
-                    <i class="fas fa-fw fa-chart-area"></i>
-                    <span>Equipments</span></a>
-            </li>
+            <hr class="sidebar-divider">
 
-            <li class="nav-item ">
+            <div class="sidebar-heading">
+                Feedback
+            </div>
+
+            <li class="nav-item active">
                 <a class="nav-link" href="./feedback.php">
                     <i class="fas fa-fw fa-chart-area"></i>
                     <span>Feedback</span></a>
             </li>
 
-            <li class="nav-item ">
-                <a class="nav-link" href="./users.php">
-                    <i class="fas fa-fw fa-user"></i>
-                    <span>Users</span></a>
-            </li>
-
-            <li class="nav-item ">
-                <a class="nav-link" href="./staff.php">
-                    <i class="fas fa-fw fa-user"></i>
-                    <span>Staff</span></a>
-            </li>
 
         </ul>
 
@@ -124,23 +117,27 @@ $result = $con->query($sql);
 
             <div id="content">
 
-                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+                 <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
 
+                    <!-- Sidebar Toggle (Topbar) -->
                     <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
                         <i class="fa fa-bars"></i>
                     </button>
 
+                    <!-- Topbar Navbar -->
                     <ul class="navbar-nav ml-auto">
 
 
                         <div class="topbar-divider d-none d-sm-block"></div>
 
+                        <!-- Nav Item - User Information -->
                         <li class="nav-item dropdown no-arrow">
-                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">CHOLES Admin</span>
-                                <img class="img-profile rounded-circle"
-                                    src="img/undraw_profile.svg">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                                 data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+
+                                <span class="mr-2 d-none d-lg-inline text-gray-600 small"><?php echo $_SESSION["fname"]," ", $_SESSION["lname"]; ?></span>
+                                    <img class="img-profile rounded-circle"
+                                    src="../admin/dashboard/img/undraw_profile.svg">
                             </a>
                             <!-- Dropdown - User Information -->
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
@@ -150,7 +147,7 @@ $result = $con->query($sql);
                                     Profile
                                 </a>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="../../destroy.php" data-toggle="modal" data-target="#logoutModal">
+                                <a class="dropdown-item" href="../destroy.php" data-toggle="modal" data-target="#logoutModal">
                                     <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
                                     Logout
                                 </a>
@@ -164,8 +161,25 @@ $result = $con->query($sql);
                 <div class="container-fluid">
 
                     <div class="d-sm-flex align-items-center justify-content-between mb-4 position-relative">
-                        <h1 class="h3 mb-0 text-gray-800">Users</h1>
-
+                        <h1 class="h3 mb-0 text-gray-800">User Feedbacks</h1>
+                        <div class=" p-3" style="z-index: 11">
+                            <div id="toastMessage" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                                <div class="d-flex">
+                                    <div class="toast-body">
+                                        <?php
+                                        if (isset($_SESSION['success'])) {
+                                            echo $_SESSION['success'];
+                                            unset($_SESSION['success']); // Clear message after showing
+                                        } elseif (isset($_SESSION['error'])) {
+                                            echo $_SESSION['error'];
+                                            unset($_SESSION['error']); // Clear message after showing
+                                        }
+                                        ?>
+                                    </div>
+                                    <button type="button" class="btn me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"><i class="fas fa-times"></i></button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                 </div>
@@ -180,38 +194,34 @@ $result = $con->query($sql);
                 <thead>
                     <tr>
                         <th>Name</th>
-                        <th>Number</th>
-                        <th>Email</th>
-                        <th>Province</th>
-                        <th>City/Municipality</th>
-                        <th>Barangay</th>
-                        <th>Street</th>
+                        <th>Rating</th>
+                        <th>Comment</th>
+                        <th>Created At</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php
+                <?php
                     if ($result->num_rows > 0) {
                         while ($row = $result->fetch_assoc()) {
+                            $status = htmlspecialchars($row['status']);
+
                             echo "<tr>";
-                            echo "<td>" . htmlspecialchars($row['fname']) . "</td>";
-                            echo "<td>" . htmlspecialchars($row['mobile']) . "</td>";
-                            echo "<td>". htmlspecialchars($row['email']) . "</td>";
-                            echo "<td>" . htmlspecialchars($row['province']) . "</td>"; // Replace with actual count column
-                            echo "<td>" . htmlspecialchars($row['city']) . "</td>";
-                            echo "<td>". htmlspecialchars($row['barangay']) . "</td>"; // Replace with actual price column
-                            echo "<td>". htmlspecialchars($row['street']) . "</td>"; // Replace with actual status column
-                            echo "</tr>";
+                            echo "<td>" . htmlspecialchars($row['customer_name']) . "</td>";
+                            echo "<td>" . htmlspecialchars($row['rating']) . "</td>";
+                            echo "<td>" . htmlspecialchars($row['comment']) . "</td>";
+                            echo "<td>" . htmlspecialchars($row['created_at']) . "</td>";
                         }
                     } else {
-                        echo "<tr><td colspan='8' class='text-center'>No records found</td></tr>";
+                        echo "<tr><td colspan='9' class='text-center'>No records found</td></tr>";
                     }
-                    ?>
+                ?>
                 </tbody>
+
             </table>
         </div>
     </div>
 </div>
-                    </div>
+        </div>
                 </div>
 
             </div>
@@ -255,18 +265,15 @@ $result = $con->query($sql);
 
     <script src="vendor/jquery/jquery.min.js"></script>
     <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    
 
     <script src="vendor/jquery-easing/jquery.easing.min.js"></script>
 
     <script src="js/sb-admin-2.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        var toastEl = document.getElementById('toastMessage');
-        if (toastEl && toastEl.textContent.trim() !== "") {
-            var toast = new bootstrap.Toast(toastEl);
-            toast.show();
-        }
+    $(document).ready(function () {
+        $('.dropdown-toggle').dropdown();
     });
     </script>
 

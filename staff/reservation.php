@@ -1,13 +1,13 @@
 <?php
 session_start();
 
-if (!isset($_SESSION["user_id"]) || $_SESSION["role"] == 0 || $_SESSION["role"] == 2) {
-    header("Location: ../../index.php"); // Redirect to home or login
+if (!isset($_SESSION["user_id"]) || $_SESSION["role"] == 0 || $_SESSION["role"] == 1) {
+    header("Location: ../index.php"); // Redirect to home or login
     exit();
 }
 
 
-require_once '../../data-handling/db/connection.php';
+require_once '../data-handling/db/connection.php';
 
 $sql = "SELECT 
             r.id AS reservation_id,
@@ -54,12 +54,14 @@ $result = $con->query($sql);
 
     <title>CHOLES Admin - Menu</title>
 
-    <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <!-- <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css"> -->
+    <link rel="stylesheet" href="../admin/dashboard/vendor/fontawesome-free/css/all.min.css">
     <link
         href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
         rel="stylesheet">
 
-    <link href="css/sb-admin-2.min.css" rel="stylesheet">
+    <!-- <link href="css/sb-admin-2.min.css" rel="stylesheet"> -->
+    <link rel="stylesheet" href="../admin/dashboard/css/sb-admin-2.css">
 
 </head>
 
@@ -69,7 +71,7 @@ $result = $con->query($sql);
 
         <ul class="navbar-nav sidebar sidebar-dark accordion" id="accordionSidebar" style="background-color:  #059652;">
 
-            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.html">
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.php">
                 <div class="sidebar-brand-icon rotate-n-15">
                     <i class="fas fa-laugh-wink"></i>
                 </div>
@@ -78,12 +80,6 @@ $result = $con->query($sql);
 
             <hr class="sidebar-divider my-0">
 
-            <li class="nav-item">
-                <a class="nav-link" href="index.php">
-                    <i class="fas fa-fw fa-tachometer-alt"></i>
-                    <span>Dashboard</span></a>
-            </li>
-
             <hr class="sidebar-divider">
 
             <div class="sidebar-heading">
@@ -91,7 +87,7 @@ $result = $con->query($sql);
             </div>
 
             <li class="nav-item">
-                <a class="nav-link" href="./menu.php">
+                <a class="nav-link" href="./index.php">
                     <i class="fas fa-fw fa-utensils"></i>
                     <span>Menu</span></a>
             </li>
@@ -114,12 +110,11 @@ $result = $con->query($sql);
                     <span>Reservations</span></a>
             </li>
 
-            <!-- Anomyties -->
-            <li class="nav-item">
-                <a class="nav-link" href="./inventory.php">
-                    <i class="fas fa-fw fa-chart-area"></i>
-                    <span>Equipments</span></a>
-            </li>
+            <hr class="sidebar-divider">
+
+            <div class="sidebar-heading">
+                Feedback
+            </div>
 
             <li class="nav-item ">
                 <a class="nav-link" href="./feedback.php">
@@ -127,17 +122,6 @@ $result = $con->query($sql);
                     <span>Feedback</span></a>
             </li>
 
-            <li class="nav-item ">
-                <a class="nav-link" href="./users.php">
-                    <i class="fas fa-fw fa-user"></i>
-                    <span>Users</span></a>
-            </li>
-
-            <li class="nav-item ">
-                <a class="nav-link" href="./staff.php">
-                    <i class="fas fa-fw fa-user"></i>
-                    <span>Staff</span></a>
-            </li>
 
         </ul>
 
@@ -157,11 +141,11 @@ $result = $con->query($sql);
                         <div class="topbar-divider d-none d-sm-block"></div>
 
                         <li class="nav-item dropdown no-arrow">
-                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">CHOLES Admin</span>
+                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                             data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <span class="mr-2 d-none d-lg-inline text-gray-600 small"><?php echo $_SESSION["fname"]," ", $_SESSION["lname"]; ?></span>
                                 <img class="img-profile rounded-circle"
-                                    src="img/undraw_profile.svg">
+                                    src="../admin//dashboard/img/undraw_profile.svg">
                             </a>
                             <!-- Dropdown - User Information -->
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
@@ -186,6 +170,7 @@ $result = $con->query($sql);
 
                     <div class="d-sm-flex align-items-center justify-content-between mb-4 position-relative">
                         <h1 class="h3 mb-0 text-gray-800">Reservations</h1>
+                        <div class="d-flex justify-content-center align-items-center">
                         <div class=" p-3" style="z-index: 11">
                             <div id="toastMessage" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
                                 <div class="d-flex">
@@ -203,6 +188,7 @@ $result = $con->query($sql);
                                     <button type="button" class="btn me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"><i class="fas fa-times"></i></button>
                                 </div>
                             </div>
+                        </div>
                         </div>
                     </div>
 
@@ -419,7 +405,7 @@ $(document).ready(function () {
 
         // Display image if available
         if (image) {
-            $("#modalImage").html(`<img src="../../customer/${image}" class="img-fluid" style="max-width: 300px; alt="Downpayment Proof">`);
+            $("#modalImage").html(`<img src="../customer/${image}" class="img-fluid" style="max-width: 300px; alt="Downpayment Proof">`);
         } else {
             $("#modalImage").html("No image available");
         }
@@ -439,6 +425,11 @@ $(document).ready(function () {
         }
     });
     </script>
+<script>
+  $(document).ready(function () {
+      $('.dropdown-toggle').dropdown();
+  });
+</script>
 
 </body>
 

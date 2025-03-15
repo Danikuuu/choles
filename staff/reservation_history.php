@@ -1,14 +1,12 @@
 <?php
 session_start();
 
-if (!isset($_SESSION["user_id"]) || $_SESSION["role"] == 1 || $_SESSION["role"] == 2) {
+if (!isset($_SESSION["user_id"]) || $_SESSION["role"] == 1 || $_SESSION["role"] == 0) {
     header("Location: ../index.php");
     exit();
 }
 
 require_once '../data-handling/db/connection.php';
-
-$user_id = $_SESSION["user_id"];
 
 $sql = "SELECT 
             r.id AS reservation_id,
@@ -31,14 +29,10 @@ $sql = "SELECT
         JOIN package p ON cpm.package_id = p.id
         JOIN menu m ON cpm.menu_id = m.id
         JOIN user c ON cpm.customer_id = c.id
-        WHERE c.id = ? 
         ORDER BY r.event_date DESC";
 
 
-$stmt = $con->prepare($sql);
-$stmt->bind_param("i", $user_id); 
-$stmt->execute();
-$result = $stmt->get_result();
+$result = $con->query($sql);
 ?>
 
 

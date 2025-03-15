@@ -2,10 +2,34 @@
 session_start();
 include "./data-handling/db/connection.php";
 
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+$con->set_charset("utf8mb4");
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = trim(htmlspecialchars($_POST["email"]));
     $password = trim($_POST["password"]);
+    $recaptchaResponse = $_POST["g-recaptcha-response"];
 
+    // Check if reCAPTCHA was completed
+    if (empty($recaptchaResponse)) {
+        $_SESSION["error"] = "Please complete the reCAPTCHA verification!";
+        header("Location: login.php");
+        exit();
+    }
+
+    // Verify reCAPTCHA response
+    $secretKey = "6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe"; // Test secret key
+    $verifyURL = "https://www.google.com/recaptcha/api/siteverify";
+    $response = file_get_contents($verifyURL . "?secret=" . $secretKey . "&response=" . $recaptchaResponse);
+    $responseData = json_decode($response);
+
+    if (!$responseData->success) {
+        $_SESSION["error"] = "reCAPTCHA verification failed!";
+        header("Location: login.php");
+        exit();
+    }
+
+    // Proceed with login authentication
     $stmt = $con->prepare("SELECT id, password, fname, lname, role FROM user WHERE email = ?");
     $stmt->bind_param("s", $email);
     $stmt->execute();
@@ -24,20 +48,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             if ($role == 1) { 
                 header("Location: ./admin/dashboard/index.php");
+            } elseif ($role == 2) { 
+                header("Location: ./staff/index.php");
             } else {
                 header("Location: ./customer/index.php");
             }
             exit();
         } else {
-            $error = "Invalid password!";
+            $_SESSION["error"] = "Invalid password!";
         }
     } else {
-        $error = "User not found!";
+        $_SESSION["error"] = "User not found!";
     }
 
     $stmt->close();
     $con->close();
+    header("Location: login.php");
+    exit();
 }
+
 ?>
 
 
@@ -130,6 +159,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <label for="password" class="form-label">Password</label>
                 <input type="password" name="password" class="form-control" id="password" placeholder="Enter your password">
               </div>
+              <div class="mb-3 d-flex justify-content-center ialign-items-center">
+                  <div class="g-recaptcha" data-sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"></div>
+              </div>
               <button type="submit" class="btn btn-primary w-100">Login</button>
               <p class="text-center mt-3">Forgot password? <a href="./forgot-password.php">Click here!</a></p>
               <p class="text-center mt-3">Don't have an account? <a href="signup.php">Sign up</a></p>
@@ -203,6 +235,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   <script src="assets/vendor/glightbox/js/glightbox.min.js"></script>
   <script src="assets/vendor/purecounter/purecounter_vanilla.js"></script>
   <script src="assets/vendor/swiper/swiper-bundle.min.js"></script>
+  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+
 
   <!-- Main JS File -->
   <script src="assets/js/main.js"></script>

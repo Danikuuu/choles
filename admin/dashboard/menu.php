@@ -1,8 +1,8 @@
 <?php
 session_start();
 
-if (!isset($_SESSION["user_id"]) || $_SESSION["role"] == 0) {
-    header("Location: ../index.php"); // Redirect to home or login
+if (!isset($_SESSION["user_id"]) || $_SESSION["role"] == 0 || $_SESSION["role"] == 2) {
+    header("Location: ../../index.php"); // Redirect to home or login
     exit();
 }
 
@@ -115,6 +115,12 @@ if ($category_result->num_rows > 0) {
                 <a class="nav-link" href="./users.php">
                     <i class="fas fa-fw fa-user"></i>
                     <span>Users</span></a>
+            </li>
+
+            <li class="nav-item ">
+                <a class="nav-link" href="./staff.php">
+                    <i class="fas fa-fw fa-user"></i>
+                    <span>Staff</span></a>
             </li>
 
         </ul>

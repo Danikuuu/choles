@@ -1,8 +1,8 @@
 <?php
 session_start();
 
-if (!isset($_SESSION["user_id"]) || $_SESSION["role"] == 0) {
-    header("Location: ../index.php"); // Redirect to home or login
+if (!isset($_SESSION["user_id"]) || $_SESSION["role"] == 0 || $_SESSION["role"] == 2) {
+    header("Location: ../../index.php"); // Redirect to home or login
     exit();
 }
 
@@ -122,6 +122,12 @@ $result = $con->query($sql);
                     <span>Users</span></a>
             </li>
 
+            <li class="nav-item ">
+                <a class="nav-link" href="./staff.php">
+                    <i class="fas fa-fw fa-user"></i>
+                    <span>Staff</span></a>
+            </li>
+
         </ul>
 
         <div id="content-wrapper" class="d-flex flex-column">
@@ -167,7 +173,7 @@ $result = $con->query($sql);
                 <div class="container-fluid">
 
                     <div class="d-sm-flex align-items-center justify-content-between mb-4 position-relative">
-                        <h1 class="h3 mb-0 text-gray-800">Reservations</h1>
+                        <h1 class="h3 mb-0 text-gray-800">User Feedbacks</h1>
                         <div class=" p-3" style="z-index: 11">
                             <div id="toastMessage" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
                                 <div class="d-flex">

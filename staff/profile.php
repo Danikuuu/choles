@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-if (!isset($_SESSION["user_id"]) || $_SESSION["role"] == 1 || $_SESSION["role"] == 2) {
+if (!isset($_SESSION["user_id"]) || $_SESSION["role"] == 0 || $_SESSION["role"] == 1) {
     header("Location: ../index.php");
     exit();
 }
@@ -33,13 +33,13 @@ $user = $result->fetch_assoc();
     <title>CHOLES - Menu</title>
 
     <!-- Custom fonts for this template-->
-    <link rel="stylesheet" href="../admin//dashboard/vendor/fontawesome-free/css/all.min.css">
+    <link rel="stylesheet" href="../admin/dashboard/vendor/fontawesome-free/css/all.min.css">
     <link
         href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
         rel="stylesheet">
 
-    <!-- Custom styles for this template-->
-    <link rel="stylesheet" href="../admin/dashboard/css//sb-admin-2.min.css">
+    <!-- <link href="css/sb-admin-2.min.css" rel="stylesheet"> -->
+    <link rel="stylesheet" href="../admin/dashboard/css/sb-admin-2.css">
 
 </head>
 
@@ -51,58 +51,59 @@ $user = $result->fetch_assoc();
         <!-- Sidebar -->
         <ul class="navbar-nav sidebar sidebar-dark accordion" id="accordionSidebar" style="background-color:  #059652;">
 
-            <!-- Sidebar - Brand -->
-            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.html">
-                <div class="sidebar-brand-icon rotate-n-15">
-                    <i class="fas fa-laugh-wink"></i>
-                </div>
-                <div class="sidebar-brand-text mx-3">CHOLES <sup>Catering</sup></div>
-            </a>
+<a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.php">
+    <div class="sidebar-brand-icon rotate-n-15">
+        <i class="fas fa-laugh-wink"></i>
+    </div>
+    <div class="sidebar-brand-text mx-3">CHOLES <sup>Admin</sup></div>
+</a>
 
-            <!-- Divider -->
-            <hr class="sidebar-divider my-0">
+<hr class="sidebar-divider my-0">
 
-            <!-- Nav Item - Dashboard -->
-            <li class="nav-item">
-                <a class="nav-link" href="index.php">
-                    <i class="fas fa-fw fa-tachometer-alt"></i>
-                    <span>Menu</span></a>
-            </li>
+<hr class="sidebar-divider">
 
-            <!-- Divider -->
-            <hr class="sidebar-divider">
+<div class="sidebar-heading">
+    Menu Management
+</div>
 
-            <!-- Heading -->
-            <div class="sidebar-heading">
-                Reservations
-            </div>
+<li class="nav-item">
+    <a class="nav-link" href="./index.php">
+        <i class="fas fa-fw fa-utensils"></i>
+        <span>Menu</span></a>
+</li>
 
-            <!-- Nav Item - Pages Collapse Menu -->
-            <li class="nav-item">
-                <a class="nav-link" href="./reservation.php">
-                    <i class="fas fa-fw fa-utensils"></i>
-                    <span>Reservations</span></a>
-            </li>
+<li class="nav-item">
+    <a class="nav-link" href="./package.php">
+        <i class="fas fa-fw fa-utensils"></i>
+        <span>Packages</span></a>
+</li>
 
-            <li class="nav-item">
-                <a class="nav-link" href="./reservation_history.php">
-                    <i class="fas fa-fw fa-utensils"></i>
-                    <span>Reservation History</span></a>
-            </li>
+<hr class="sidebar-divider">
 
-            <!-- Heading -->
-            <div class="sidebar-heading">
-                Feedback
-            </div>
+<div class="sidebar-heading">
+    Reservations
+</div>
 
-            <!-- Nav Item - Pages Collapse Menu -->
-            <li class="nav-item">
-                <a class="nav-link" href="./feedback.php">
-                    <i class="fas fa-fw fa-utensils"></i>
-                    <span>Feedback</span></a>
-            </li>
+<li class="nav-item">
+    <a class="nav-link" href="./reservation.php">
+        <i class="fas fa-fw fa-folder"></i>
+        <span>Reservations</span></a>
+</li>
 
-        </ul>
+<hr class="sidebar-divider">
+
+<div class="sidebar-heading">
+    Feedback
+</div>
+
+<li class="nav-item ">
+    <a class="nav-link" href="./feedback.php">
+        <i class="fas fa-fw fa-chart-area"></i>
+        <span>Feedback</span></a>
+</li>
+
+
+</ul>
         <!-- End of Sidebar -->
 
         <!-- Content Wrapper -->
@@ -130,8 +131,8 @@ $user = $result->fetch_assoc();
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <span class="mr-2 d-none d-lg-inline text-gray-600 small"><?php echo $_SESSION["fname"]," ", $_SESSION["lname"]; ?></span>
-                                    <img class="img-profile rounded-circle"
-                                    src="../admin/dashboard/img/undraw_profile.svg">
+                                <img class="img-profile rounded-circle"
+                                    src="../admin//dashboard/img/undraw_profile.svg">
                             </a>
                             <!-- Dropdown - User Information -->
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
@@ -141,7 +142,7 @@ $user = $result->fetch_assoc();
                                     Profile
                                 </a>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="../destroy.php" data-toggle="modal" data-target="#logoutModal">
+                                <a class="dropdown-item" href="../../destroy.php" data-toggle="modal" data-target="#logoutModal">
                                     <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
                                     Logout
                                 </a>
@@ -234,7 +235,7 @@ $user = $result->fetch_assoc();
 
                                         <div class="text-center">
                                             <button type="submit" class="btn btn-success">Save Changes</button>
-                                            <a href="index.php" class="btn btn-secondary">Cancel</a>
+                                            <a href="./index.php" class="btn btn-secondary">Cancel</a>
                                         </div>
                                     </form>
                                         
@@ -320,6 +321,14 @@ $user = $result->fetch_assoc();
         }
     });
     </script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $("#sidebarToggleTop").click(function () {
+            $(".sidebar").toggleClass("d-none d-md-block"); // Toggle sidebar visibility
+        });
+    });
+</script>
 </body>
 
 </html>

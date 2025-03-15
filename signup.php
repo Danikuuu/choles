@@ -11,72 +11,89 @@ require 'vendor/autoload.php';
 $mail = new PHPMailer(true);
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $fname = $_POST["fname"];
-    $lname = $_POST["lname"];
-    $email = $_POST["email"];
-    $mobile = $_POST["mobile"];
-    $password = $_POST["password"];
-    $province = $_POST["province_name"];
-    $city = $_POST["city_name"];
-    $barangay = $_POST["barangay_name"];
-    $street = $_POST["street"];
-    $role = 0;
+  if (!isset($_POST['g-recaptcha-response']) || empty($_POST['g-recaptcha-response'])) {
+      $error = "Please complete the reCAPTCHA verification.";
+  } else {
+      $recaptcha_secret = "6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe";
+      $recaptcha_response = $_POST['g-recaptcha-response'];
 
-    $stmt = $con->prepare("SELECT id FROM user WHERE email = ?");
-    $stmt->bind_param("s", $email);
-    $stmt->execute();
-    $stmt->store_result();
+      // Verify reCAPTCHA
+      $response = file_get_contents("https://www.google.com/recaptcha/api/siteverify?secret=$recaptcha_secret&response=$recaptcha_response");
+      $responseKeys = json_decode($response, true);
 
-    if ($stmt->num_rows > 0) {
-        $error = "Email already exists!";
-    } else {
-        $_SESSION["registration_data"] = [
-            "fname" => $fname,
-            "lname" => $lname,
-            "email" => $email,
-            "mobile" => $mobile,
-            "password" => password_hash($password, PASSWORD_DEFAULT),
-            "province" => $province,
-            "city" => $city,
-            "barangay" => $barangay,
-            "street" => $street,
-            "role" => $role
-        ];
+      if (!$responseKeys["success"]) {
+          $error = "reCAPTCHA verification failed. Please try again.";
+      } else {
+          // Proceed with signup if reCAPTCHA is valid
+          $fname = $_POST["fname"];
+          $lname = $_POST["lname"];
+          $email = $_POST["email"];
+          $mobile = $_POST["mobile"];
+          $password = $_POST["password"];
+          $province = $_POST["province_name"];
+          $city = $_POST["city_name"];
+          $barangay = $_POST["barangay_name"];
+          $street = $_POST["street"];
+          $role = 0;
 
-        $otp = rand(100000, 999999);
-        $_SESSION["otp"] = $otp;
+          $stmt = $con->prepare("SELECT id FROM user WHERE email = ?");
+          $stmt->bind_param("s", $email);
+          $stmt->execute();
+          $stmt->store_result();
 
-        try {
-            $mail->isSMTP();
-            $mail->Host = 'smtp.gmail.com';
-            $mail->SMTPAuth = true;
-            $mail->Username = 'cholescatering@gmail.com';
-            $mail->Password = 'kuse tvje epft vvuq';
-            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-            $mail->Port = 587;
+          if ($stmt->num_rows > 0) {
+              $error = "Email already exists!";
+          } else {
+              $_SESSION["registration_data"] = [
+                  "fname" => $fname,
+                  "lname" => $lname,
+                  "email" => $email,
+                  "mobile" => $mobile,
+                  "password" => password_hash($password, PASSWORD_DEFAULT),
+                  "province" => $province,
+                  "city" => $city,
+                  "barangay" => $barangay,
+                  "street" => $street,
+                  "role" => $role
+              ];
 
-            $mail->setFrom('cholescatering@gmail.com', 'CHOLES Support');
-            $mail->addAddress($email, "$fname $lname");
+              $otp = rand(100000, 999999);
+              $_SESSION["otp"] = $otp;
 
-            $mail->isHTML(true);
-            $mail->Subject = 'OTP Verification - CHOLES';
-            $mail->Body = "<h3>Hello $fname,</h3>
-                           <p>Your OTP code is: <strong>$otp</strong></p>
-                           <p>Please enter this code to verify your account.</p>";
+              try {
+                  $mail->isSMTP();
+                  $mail->Host = 'smtp.gmail.com';
+                  $mail->SMTPAuth = true;
+                  $mail->Username = 'cholescatering@gmail.com';
+                  $mail->Password = 'kuse tvje epft vvuq';
+                  $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+                  $mail->Port = 587;
 
-            $mail->send();
+                  $mail->setFrom('cholescatering@gmail.com', 'CHOLES Support');
+                  $mail->addAddress($email, "$fname $lname");
 
-            header("Location: otp.php");
-            exit();
-        } catch (Exception $e) {
-            error_log("Mailer Error: " . $mail->ErrorInfo);
-            $error = "Failed to send OTP. Please try again.";
-        }
-    }
+                  $mail->isHTML(true);
+                  $mail->Subject = 'OTP Verification - CHOLES';
+                  $mail->Body = "<h3>Hello $fname,</h3>
+                              <p>Your OTP code is: <strong>$otp</strong></p>
+                              <p>Please enter this code to verify your account.</p>";
 
-    $stmt->close();
-    $con->close();
+                  $mail->send();
+
+                  header("Location: otp.php");
+                  exit();
+              } catch (Exception $e) {
+                  error_log("Mailer Error: " . $mail->ErrorInfo);
+                  $error = "Failed to send OTP. Please try again.";
+              }
+          }
+
+          $stmt->close();
+          $con->close();
+      }
+  }
 }
+
 
 ?>
 
@@ -209,6 +226,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <input type="password" name="password" class="form-control" required>
               </div>
 
+              <div class="mb-3 d-flex justify-content-center ialign-items-center">
+                  <div class="g-recaptcha" data-sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"></div>
+              </div>
+
               <button type="submit" class="btn btn-primary w-100">Sign Up</button>
               <p class="text-center mt-3">Already have an account? <a href="login.html">Login</a></p>
             </form>
@@ -282,6 +303,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <script src="assets/vendor/purecounter/purecounter_vanilla.js"></script>
 <script src="assets/vendor/swiper/swiper-bundle.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+
 
 <!-- Main JS File -->
 <script src="assets/js/main.js"></script>

@@ -1,8 +1,8 @@
 <?php
 session_start();
 
-if (!isset($_SESSION["user_id"]) || $_SESSION["role"] == 0) {
-    header("Location: ../index.php"); // Redirect to home or login
+if (!isset($_SESSION["user_id"]) || $_SESSION["role"] == 0 || $_SESSION["role"] == 2) {
+    header("Location: ../../index.php"); // Redirect to home or login
     exit();
 }
 
@@ -259,6 +259,12 @@ $historyResult = $con->query($history);
                     <span>Users</span></a>
             </li>
 
+            <li class="nav-item ">
+                <a class="nav-link" href="./staff.php">
+                    <i class="fas fa-fw fa-user"></i>
+                    <span>Staff</span></a>
+            </li>
+
         </ul>
         <!-- End of Sidebar -->
 
@@ -316,7 +322,7 @@ $historyResult = $con->query($history);
                     <!-- Page Heading -->
                     <div class="d-sm-flex align-items-center justify-content-between mb-4">
                         <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
-                        <a href="../../generate_report.php" class="d-none d-sm-inline-block btn btn-sm btn-success shadow-sm"><i
+                        <a href="./generate_report.php" class="d-none d-sm-inline-block btn btn-sm btn-success shadow-sm"><i
                                 class="fas fa-download fa-sm text-white-50"></i> Generate Report</a>
                     </div>
 

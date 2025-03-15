@@ -8,7 +8,7 @@ error_reporting(E_ALL);
 
 
 // Check if user is logged in and an admin
-if (!isset($_SESSION["user_id"]) || $_SESSION["role"] == 1) {
+if (!isset($_SESSION["user_id"]) || $_SESSION["role"] == 1 || $_SESSION["role"] == 2) {
     header("Location: ../index.php"); // Redirect to home or login
     exit();
 }

@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-if (!isset($_SESSION["user_id"]) || $_SESSION["role"] == 1 || $_SESSION["role"] == 2) {
+if (!isset($_SESSION["user_id"]) || $_SESSION["role"] == 1 || $_SESSION["role"] == 0) {
     header("Location: ../index.php");
     exit();
 }
@@ -57,56 +57,57 @@ while ($row = $dateResult->fetch_assoc()) {
         <!-- Sidebar -->
         <ul class="navbar-nav sidebar sidebar-dark accordion" id="accordionSidebar" style="background-color:  #059652;">
 
-            <!-- Sidebar - Brand -->
-            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.html">
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.php">
                 <div class="sidebar-brand-icon rotate-n-15">
                     <i class="fas fa-laugh-wink"></i>
                 </div>
-                <div class="sidebar-brand-text mx-3">CHOLES <sup>Catering</sup></div>
+                <div class="sidebar-brand-text mx-3">CHOLES <sup>Admin</sup></div>
             </a>
 
-            <!-- Divider -->
             <hr class="sidebar-divider my-0">
 
-            <!-- Nav Item - Dashboard -->
+            <hr class="sidebar-divider">
+
+            <div class="sidebar-heading">
+                Menu Management
+            </div>
+
             <li class="nav-item">
-                <a class="nav-link" href="index.php">
-                    <i class="fas fa-fw fa-tachometer-alt"></i>
+                <a class="nav-link" href="./index.php">
+                    <i class="fas fa-fw fa-utensils"></i>
                     <span>Menu</span></a>
             </li>
 
-            <!-- Divider -->
+            <li class="nav-item active">
+                <a class="nav-link" href="./package.php">
+                    <i class="fas fa-fw fa-utensils"></i>
+                    <span>Packages</span></a>
+            </li>
+
             <hr class="sidebar-divider">
 
-            <!-- Heading -->
             <div class="sidebar-heading">
                 Reservations
             </div>
 
-            <!-- Nav Item - Pages Collapse Menu -->
-            <li class="nav-item active">
+            <li class="nav-item">
                 <a class="nav-link" href="./reservation.php">
-                    <i class="fas fa-fw fa-utensils"></i>
+                    <i class="fas fa-fw fa-folder"></i>
                     <span>Reservations</span></a>
             </li>
 
-            <li class="nav-item">
-                <a class="nav-link" href="./reservation_history.php">
-                    <i class="fas fa-fw fa-utensils"></i>
-                    <span>Reservation History</span></a>
-            </li>
+            <hr class="sidebar-divider">
 
-            <!-- Heading -->
             <div class="sidebar-heading">
                 Feedback
             </div>
 
-            <!-- Nav Item - Pages Collapse Menu -->
-            <li class="nav-item">
+            <li class="nav-item ">
                 <a class="nav-link" href="./feedback.php">
-                    <i class="fas fa-fw fa-utensils"></i>
+                    <i class="fas fa-fw fa-chart-area"></i>
                     <span>Feedback</span></a>
             </li>
+
 
         </ul>
         <!-- End of Sidebar -->
@@ -159,30 +160,8 @@ while ($row = $dateResult->fetch_assoc()) {
                 </nav>
                 <!-- End of Topbar -->
                 <div class="container-fluid">
-                <div class="d-sm-flex align-items-center justify-content-between mb-4">
-                        <h1 class="h3 mb-0 text-gray-800">Packages</h1>
-                    </div>
-
-               <div class="d-flex justify-content-center align-items-center">
-                <div class="p-3" style="z-index: 11">
-                            <div id="toastMessage" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
-                                <div class="d-flex">
-                                    <div class="toast-body">
-                                        <?php
-                                        if (isset($_SESSION['success'])) {
-                                            echo $_SESSION['success'];
-                                            unset($_SESSION['success']); // Clear message after showing
-                                        } elseif (isset($_SESSION['error'])) {
-                                            echo $_SESSION['error'];
-                                            unset($_SESSION['error']); // Clear message after showing
-                                        }
-                                        ?>
-                                    </div>
-                                    <button type="button" class="btn me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"><i class="fas fa-times"></i></button>
-                                </div>
-                            </div>
-                        </div>
-               </div>
+                <h1 class="h3 mb-0 text-gray-800">Packages</h1>
+                    <div class="d-sm-flex align-items-center justify-content-between mb-4">
 
                 <div class="row justify-content-center align-items-center p-5">
                     <?php if ($result->num_rows > 0): ?>
@@ -242,32 +221,7 @@ while ($row = $dateResult->fetch_assoc()) {
                                 <p class="text-center"><strong>Venue Styling:</strong> <span id="modal_venue_styling"></span></p>
                                 <p class="text-center"><strong>Downpayment:</strong> <span id="modal_downpayment"></span></p>
 
-                                <!-- Reservation Form -->
-                                <form id="reservationForm" action="./create_reservation.php" method="post">
-                                    <input type="hidden" id="package_id" name="package_id">
 
-                                    <div class="form-group">
-                                        <label for="event_date">Event Date</label>
-                                        <input type="date" class="form-control" id="event_date" name="event_date" required>
-                                    </div>
-
-                                    <div class="form-group">
-                                        <label for="menu_selection">Select Menus (<span id="menu_limit"></span> items)</label> <br>
-                                        <?php if ($menuResult->num_rows > 0): ?>
-                                            <?php while ($row = $menuResult->fetch_assoc()): ?>
-                                                <div class="form-check">
-                                                    <input type="checkbox" class="form-check-input menu-checkbox" id="menu_<?php echo $row['id']; ?>" name="menu_id[]" value="<?php echo $row['id']; ?>">
-                                                    <label class="form-check-label" for="menu_<?php echo $row['id']; ?>"><?php echo htmlspecialchars($row['name']); ?></label>
-                                                </div>
-                                            <?php endwhile; ?>
-                                        <?php else: ?>
-                                            <div class="col-12 text-center">
-                                                <p>No menu found.</p>
-                                            </div>
-                                        <?php endif; ?>
-
-                                    <button type="submit" class="btn btn-success">Confirm Reservation</button>
-                                </form>
                             </div>
                         </div>
                     </div>
@@ -358,8 +312,7 @@ while ($row = $dateResult->fetch_assoc()) {
                     let packageImage = this.querySelector("img")?.src || "";
 
                     // Update modal fields
-                    document.getElementById("package_id").value = packageId;
-                    document.getElementById("menu_limit").innerText = menuCount;
+
                     document.getElementById("modal_package_name").innerText = packageName;
                     document.getElementById("modal_package_price").innerText = packagePrice;
                     document.getElementById("modal_venue").innerText = venue;
@@ -368,71 +321,14 @@ while ($row = $dateResult->fetch_assoc()) {
                     document.getElementById("modal_downpayment").innerText = downpayment;
                     document.getElementById("modal_package_image").src = packageImage;
 
-                    // Reset all checkboxes
-                    document.querySelectorAll(".menu-checkbox").forEach(cb => {
-                        cb.checked = false;  // Uncheck all
-                        cb.disabled = false; // Enable all
-                    });
 
                     // Show modal
                     $("#reservationModal").modal("show");
                 });
             });
 
-            // Handle menu limit selection
-            document.querySelectorAll(".menu-checkbox").forEach(checkbox => {
-                checkbox.addEventListener("change", function () {
-                    let checkedCount = document.querySelectorAll(".menu-checkbox:checked").length;
-                    let maxSelection = parseInt(document.getElementById("menu_limit").innerText) || 0;
-
-                    document.querySelectorAll(".menu-checkbox").forEach(cb => {
-                        if (checkedCount >= maxSelection) {
-                            if (!cb.checked) {
-                                cb.disabled = true;
-                            }
-                        } else {
-                            cb.disabled = false;
-                        }
-                    });
-                });
-            });
         });
     </script>
-
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        var toastEl = document.getElementById('toastMessage');
-        if (toastEl && toastEl.textContent.trim() !== "") {
-            var toast = new bootstrap.Toast(toastEl);
-            toast.show();
-        }
-    });
-    </script>
-
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const eventDateInput = document.getElementById("event_date");
-
-        // Get the current date
-        let today = new Date();
-        today.setDate(today.getDate() + 7); // Set the minimum date to next week
-
-        // Format the min date to YYYY-MM-DD
-        let minDateStr = today.toISOString().split("T")[0];
-        eventDateInput.setAttribute("min", minDateStr);
-
-        // Get reserved dates from PHP
-        let reservedDates = <?php echo json_encode($reservedDates); ?>;
-
-        // Disable reserved dates
-        eventDateInput.addEventListener("input", function () {
-            if (reservedDates.includes(this.value)) {
-                alert("This date is already reserved. Please select another date.");
-                this.value = ""; // Clear selected date
-            }
-        });
-    });
-</script>
 
 
 </body>

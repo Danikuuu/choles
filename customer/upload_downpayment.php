@@ -7,7 +7,7 @@ use PHPMailer\PHPMailer\Exception;
 require '../vendor/autoload.php';
 require_once '../data-handling/db/connection.php';
 
-if (!isset($_SESSION["user_id"]) || $_SESSION["role"] == 1) {
+if (!isset($_SESSION["user_id"]) || $_SESSION["role"] == 1 || $_SESSION["role"] == 2) {
     header("Location: ../index.php");
     exit();
 }

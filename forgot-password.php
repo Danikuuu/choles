@@ -9,10 +9,33 @@ require 'vendor/autoload.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = trim($_POST["email"]);
+
+    $recaptchaResponse = $_POST["g-recaptcha-response"];
+
+    // Check if reCAPTCHA was completed
+    if (empty($recaptchaResponse)) {
+        $_SESSION["error"] = "Please complete the reCAPTCHA verification!";
+        header("Location: forgot-password.php");
+        exit();
+    }
+
+    // Verify reCAPTCHA response
+    $secretKey = "6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe"; // Test secret key
+    $verifyURL = "https://www.google.com/recaptcha/api/siteverify";
+    $response = file_get_contents($verifyURL . "?secret=" . $secretKey . "&response=" . $recaptchaResponse);
+    $responseData = json_decode($response);
+
+    if (!$responseData->success) {
+        $_SESSION["error"] = "reCAPTCHA verification failed!";
+        header("Location: forgot-password.php");
+        exit();
+    }
+
     $stmt = $con->prepare("SELECT id FROM user WHERE email = ?");
     $stmt->bind_param("s", $email);
     $stmt->execute();
     $stmt->store_result();
+    
 
     if ($stmt->num_rows > 0) {
         $stmt->bind_result($user_id);
@@ -142,7 +165,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <label for="email" class="form-label">Enter your Email Address</label>
                     <input type="email" name="email" class="form-control" id="email" placeholder="Enter your email" required>
                 </div>
-                
+                <div class="mb-3 d-flex justify-content-center align-items-center">
+                            <div class="g-recaptcha" data-sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"></div>
+                        </div>
                 <button type="submit" class="btn btn-primary w-100">Send OTP</button>
 
                 <p class="text-center mt-3">
@@ -219,6 +244,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   <script src="assets/vendor/glightbox/js/glightbox.min.js"></script>
   <script src="assets/vendor/purecounter/purecounter_vanilla.js"></script>
   <script src="assets/vendor/swiper/swiper-bundle.min.js"></script>
+
+  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+
 
   <!-- Main JS File -->
   <script src="assets/js/main.js"></script>
