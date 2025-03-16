@@ -35,7 +35,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             unset($_SESSION["registration_data"]);
             unset($_SESSION["otp"]);
             $_SESSION["success"] = "Registration Successful!";
-            header("Location: login.php"); // Redirect to dashboard or success page
+            header("Location: login.php");
             exit();
         } else {
             $_SESSION["error"] = "Something went wrong! Please try again.";

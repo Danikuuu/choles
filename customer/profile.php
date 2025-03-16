@@ -206,7 +206,7 @@ $user = $result->fetch_assoc();
                                             </div>
                                             <div class="col-md-6 mb-3">
                                                 <label class="form-label">Mobile</label>
-                                                <input type="text" name="mobile" class="form-control" value="<?php echo htmlspecialchars($user["mobile"]); ?>" required>
+                                                <input type="text" name="mobile" class="form-control" value="<?php echo htmlspecialchars($user["mobile"]); ?>" disabled required>
                                             </div>
                                         </div>
 

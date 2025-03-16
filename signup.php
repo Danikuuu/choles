@@ -188,7 +188,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
               <div class="mb-3">
                 <label class="form-label">Mobile</label>
-                <input type="text" name="mobile" class="form-control" required>
+                <input type="text" name="mobile" class="form-control" required  oninput="formatPhoneNumber(this)">
               </div>
 
               <div class="mb-3">
@@ -378,6 +378,36 @@ $(document).ready(function() {
     });
 });
 
+</script>
+
+<script>
+      function formatPhoneNumber(input) {
+    // Remove non-numeric characters
+    var phoneNumber = input.value.replace(/\D/g, '');
+
+    // Ensure the length does not exceed 11 digits
+    if (phoneNumber.length > 11) {
+        phoneNumber = phoneNumber.slice(0, 11);
+    }
+
+    // Format the phone number without hyphens
+    var formattedNumber = phoneNumber;
+
+    // Update the input value with the formatted number
+    input.value = formattedNumber;
+
+    // Check if the entered number starts with "09"
+    if (phoneNumber.length !== 11) {
+        input.setCustomValidity('Invalid phone number format. Must start with "09" and 11 digits.');
+    } else if (!/^09\d{9}$/.test(phoneNumber)) {
+        input.setCustomValidity('Invalid phone number format. Must start with "09".');
+    } else {
+        input.setCustomValidity('');
+    }
+
+    // Trigger custom validation styles (if you have any)
+    input.parentElement.classList.add('was-validated');
+}
 </script>
 </body>
 </html>
