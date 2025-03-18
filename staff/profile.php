@@ -213,6 +213,13 @@ $user = $result->fetch_assoc();
 
                                         <div class="row">
                                             <div class="col-md-6 mb-3">
+                                                <label class="form-label">New Password</label>
+                                                <input type="text" name="password" class="form-control" required>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
                                                 <label class="form-label">Province</label>
                                                 <input type="text" name="province" class="form-control" value="<?php echo htmlspecialchars($user["province"]); ?>" required>
                                             </div>

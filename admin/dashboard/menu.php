@@ -260,10 +260,10 @@ if ($category_result->num_rows > 0) {
                                         <div class="row no-gutters align-items-center">
                                             <div class="col mr-2">
                                                 <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                                    <?= htmlspecialchars($row['name']); ?>
+                                                   CHOLES Menu
                                                 </div>
                                                 <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                                    ₱150.00
+                                                    <?= htmlspecialchars($row['name']); ?>
                                                 </div>
                                                 <span class="badge badge-success">
                                                     <?= htmlspecialchars($row['category']); ?>

@@ -9,7 +9,7 @@ if (!isset($_SESSION["user_id"]) || $_SESSION["role"] == 0 || $_SESSION["role"] 
 
 require_once '../../data-handling/db/connection.php';
 
-$sql = "SELECT * from user";
+$sql = "SELECT * from user where role = 0";
 
 $result = $con->query($sql);
 

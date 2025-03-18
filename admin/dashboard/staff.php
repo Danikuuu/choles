@@ -335,7 +335,11 @@ $result = $con->query($sql);
                                                 </div>
                                                 <div class="mb-3">
                                                     <label class="form-label" for="firstName">Mobile Number</label>
-                                                    <input class="form-control" type="text" name="mobile" id="mobile">
+                                                    <input class="form-control" type="Number" name="mobile" id="mobile">
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label" for="firstName">New Password</label>
+                                                    <input class="form-control" type="password" name="password]" id="password]">
                                                 </div>
                                                 <button type="submit" class="btn btn-success">Save</button>
                                             </form>

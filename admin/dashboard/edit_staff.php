@@ -13,6 +13,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $lname = trim($_POST['lname']);
     $email = trim($_POST['email']);
     $mobile = trim($_POST['mobile']);
+    $password = trim($_POST['password']);
 
     if (empty($id) || empty($fname) || empty($lname) || empty($email) || empty($mobile)) {
         $_SESSION['error'] = "All fields are required.";
@@ -20,8 +21,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         exit();
     }
 
-    $stmt = $con->prepare("UPDATE user SET fname = ?, lname = ?, email = ?, mobile = ? WHERE id = ?");
-    $stmt->bind_param("ssssi", $fname, $lname, $email, $mobile, $id);
+    if (!empty($password)) {
+        $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+        $stmt = $con->prepare("UPDATE user SET fname = ?, lname = ?, email = ?, mobile = ?, password = ? WHERE id = ?");
+        $stmt->bind_param("sssssi", $fname, $lname, $email, $mobile, $hashedPassword, $id);
+    } else {
+        $stmt = $con->prepare("UPDATE user SET fname = ?, lname = ?, email = ?, mobile = ? WHERE id = ?");
+        $stmt->bind_param("ssssi", $fname, $lname, $email, $mobile, $id);
+    }
 
     if ($stmt->execute()) {
         $_SESSION['success'] = "Staff details updated successfully!";

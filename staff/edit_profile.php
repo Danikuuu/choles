@@ -28,16 +28,25 @@ $user = $result->fetch_assoc();
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $fname = $_POST["fname"];
     $lname = $_POST["lname"];
-    $mobile = $_POST["mobile"];
     $province = $_POST["province"];
     $city = $_POST["city"];
     $barangay = $_POST["barangay"];
     $street = $_POST["street"];
+    $password = trim($_POST["password"]);
+
 
     // Fix: Removed extra comma before WHERE
-    $sql = "UPDATE user SET fname=?, lname=?, mobile=?, province=?, city=?, barangay=?, street=? WHERE id=?";
-    $stmt = $con->prepare($sql);
-    $stmt->bind_param("sssssssi", $fname, $lname, $mobile, $province, $city, $barangay, $street, $user_id);
+    if(!empty($password)) {
+        $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+        $sql = "UPDATE user SET fname=?, lname=?, password= ?, province=?, city=?, barangay=?, street=? WHERE id=?";
+        $stmt = $con->prepare($sql);
+        $stmt->bind_param("sssssssi", $fname, $lname, $hashedPassword, $province, $city, $barangay, $street, $user_id);
+    } else {
+        $sql = "UPDATE user SET fname=?, lname=?, province=?, city=?, barangay=?, street=? WHERE id=?";
+        $stmt = $con->prepare($sql);
+        $stmt->bind_param("ssssssi", $fname, $lname, $province, $city, $barangay, $street, $user_id);
+    }
+
 
     if ($stmt->execute()) {
         $_SESSION['success'] = "Profile updated successfully!";
