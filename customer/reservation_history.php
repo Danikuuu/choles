@@ -18,6 +18,7 @@ $sql = "SELECT
             r.status,
             r.down_payment, 
             r.downpayment_price,
+            r.refund_img,
             p.package_name,
             p.package_price,
             p.people_count,
@@ -240,7 +241,8 @@ $result = $stmt->get_result();
                                         data-price='" . htmlspecialchars($row['package_price']) . "'
                                         data-downpayment_price='" . htmlspecialchars($row['downpayment_price']) . "'
                                         data-status='" . htmlspecialchars($row['status']) . "'
-                                        data-downpayment='" . htmlspecialchars($row['down_payment']) . "'>
+                                        data-downpayment='" . htmlspecialchars($row['down_payment']) . "'
+                                        data-refund-image='" . htmlspecialchars($row['refund_img']) . "'>
                                         View
                                     </button>";
 
@@ -306,6 +308,10 @@ $result = $stmt->get_result();
                                 <tr id="downpaymentRow">
                                     <th>Downpayment Image</th>
                                     <td id="downpaymentContent"></td>
+                                </tr>
+                                <tr id="RefundRow">
+                                    <th>Refund Image</th>
+                                    <td id="modalRefund"></td>
                                 </tr>
                             </table>
                         </div>
@@ -396,6 +402,7 @@ $result = $stmt->get_result();
                 let downpayment_price = $(this).data("downpayment_price");
                 let status = $(this).data("status");
                 let downpayment = $(this).data("downpayment");
+                let refund = $(this).data("refund-image");
 
                 // Set modal content
                 $("#modalCustomer").text(customer);
@@ -406,14 +413,21 @@ $result = $stmt->get_result();
                 $("#modalPrice").text(price);
                 $("#modalStatus").text(status);
                 $("#modalDownpayment").text(downpayment_price);
+                $("#modalRefund").text(refund);
+
+                console.log(refund);
 
                 // Handle Downpayment Section
                 let downpaymentRow = $("#downpaymentRow");
+                let downpaymentRefund = $("#RefundRow");
+                let Refund = $("#modalRefund");
                 let downpaymentContent = $("#downpaymentContent");
                 console.log("Downpayment Image Path:", downpayment);
+                console.log("Refund Image Path:", refund);
 
 
                 if (status === "pending") {
+                    downpaymentRefund.hide();
                     downpaymentRow.show();
                     downpaymentContent.html(`
                     <img src="${downpayment}" alt="Downpayment Receipt" class="img-fluid" style="max-width: 300px;">
@@ -424,12 +438,34 @@ $result = $stmt->get_result();
                         </form> <br>
                     `);
                 } else if (status === "approved" || status === "completed") {
+                    downpaymentRefund.hide();
                     downpaymentRow.show();
                     downpaymentContent.html(`
                         <img src="${downpayment}" alt="Downpayment Receipt" class="img-fluid" style="max-width: 300px;">
                     `);
                 } else if (status === "cancelled") {
-                    downpaymentRow.hide();
+                    downpaymentRow.show();
+                    downpaymentContent.html(`
+                        <img src="${downpayment}" alt="Downpayment Receipt" class="img-fluid" style="max-width: 300px;">
+                    `); 
+                    downpaymentRow.show();
+                    Refund.html(`
+                    <img src="${refund}" alt="Refund account" class="img-fluid" style="max-width: 300px;">
+                        <form action="./upload_refund.php" method="post" enctype="multipart/form-data">
+                            <input type="hidden" name="id" value="${reservationId}">
+                            <input type="file" name="refund" id="refund">
+                            <input type="submit" value="Submit" class="btn btn-sm btn-success">
+                        </form> <br>
+                    `);
+                } else if (status === "refunded") {
+                    downpaymentRow.show();
+                    downpaymentContent.html(`
+                        <img src="${downpayment}" alt="Downpayment Receipt" class="img-fluid" style="max-width: 300px;">
+                    `); 
+                    downpaymentRow.show();
+                    Refund.html(`
+                    <img src="${refund}" alt="Refund account" class="img-fluid" style="max-width: 300px;">
+                    `);
                 }
 
                 // Show modal

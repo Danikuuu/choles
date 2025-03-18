@@ -252,6 +252,40 @@ while ($row = $dateResult->fetch_assoc()) {
                                     </div>
 
                                     <div class="form-group">
+                                        <label for="event_date">Event Type</label>
+                                        <select name="event_type" id="event_type" class="form-control" required>
+                                            <option value="">Select Occassion</option>
+                                            <option value="birthday">Birthday</option>
+                                            <option value="wedding">Wedding</option>
+                                            <option value="anniversary">Anniversary</option>
+                                            <option value="graduation">Graduation</option>
+                                            <option value="corporate_events">Corporate Events</option>
+                                            <option value="holloween_party">Holloween Party</option>
+                                            <option value="christmas_party">Christman Party</option>
+                                            <option value="promotion_party">Promotion Party</option>
+                                            <option value="valentine_event">Valentine Event</option>
+                                            <option value="reunion">Reunion</option>
+                                            <option value="baby_shower">Baby Shower</option>
+                                            <option value="retirement_party">Retirement Party</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="eventthems">Event Theme</label>
+                                        <input type="text" name="event_theme" id="event_theme" placeholder="Ex. Color blue or princess theme" class="form-control" required>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="start_time">Start Time</label>
+                                        <input type="time" class="form-control" id="start_time" name="start_time" required max="20:00">
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="end_time">End Time</label>
+                                        <input type="time" class="form-control" id="end_time" name="end_time" required>
+                                    </div>
+
+                                    <div class="form-group">
                                         <label for="menu_selection">Select Menus (<span id="menu_limit"></span> items)</label> <br>
                                         <?php if ($menuResult->num_rows > 0): ?>
                                             <?php while ($row = $menuResult->fetch_assoc()): ?>
@@ -425,15 +459,23 @@ while ($row = $dateResult->fetch_assoc()) {
         let reservedDates = <?php echo json_encode($reservedDates); ?>;
 
         // Disable reserved dates
-        eventDateInput.addEventListener("input", function () {
-            if (reservedDates.includes(this.value)) {
-                alert("This date is already reserved. Please select another date.");
-                this.value = ""; // Clear selected date
-            }
-        });
+        // eventDateInput.addEventListener("input", function () {
+        //     if (reservedDates.includes(this.value)) {
+        //         alert("This date is already reserved. Please select another date.");
+        //         this.value = ""; // Clear selected date
+        //     }
+        // });
     });
 </script>
 
+<script>
+    document.getElementById('start_time').addEventListener('input', function () {
+        if (this.value > '21:00') {
+            alert('Start time cannot be later than 8:00 PM.');
+            this.value = '20:00';
+        }
+    });
+</script>
 
 </body>
 

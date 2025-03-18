@@ -243,7 +243,7 @@ $result = $con->query($sql);
                                     </button>";
 
                             // Display "Approve" button only if status is NOT "cancelled" or "completed"
-                            if ($status !== 'cancelled' && $status !== 'completed' && $status !== 'approved') {
+                            if ($status !== 'cancelled' && $status !== 'completed' && $status !== 'approved' && $status !== 'refunded') {
                                 echo "<form method='POST' action='./update_status.php' style='display:inline;'>
                                         <input type='hidden' name='reservationId' value='" . htmlspecialchars($row['reservation_id']) . "'>
                                         <input type='hidden' name='status' value='approved'>
@@ -252,7 +252,7 @@ $result = $con->query($sql);
                             }
 
                             // Display "Complete" button only if status is NOT "cancelled" or "completed"
-                            if ($status !== 'cancelled' && $status !== 'completed') {
+                            if ($status !== 'cancelled' && $status !== 'completed' && $status !== 'refunded') {
                                 echo "<form method='POST' action='./update_status.php' style='display:inline;'>
                                         <input type='hidden' name='reservationId' value='" . htmlspecialchars($row['reservation_id']) . "'>
                                         <input type='hidden' name='status' value='completed'>
@@ -261,7 +261,7 @@ $result = $con->query($sql);
                             }
 
                             // Display "Cancel" button only if status is NOT "approved" or "completed"
-                            if ($status !== 'approved' && $status !== 'completed' && $status !== 'cancelled') {
+                            if ($status !== 'approved' && $status !== 'completed' && $status !== 'cancelled' && $status !== 'refunded') {
                                 echo "<form method='POST' action='./update_status.php' style='display:inline;'>
                                         <input type='hidden' name='reservationId' value='" . htmlspecialchars($row['reservation_id']) . "'>
                                         <input type='hidden' name='status' value='cancelled'>

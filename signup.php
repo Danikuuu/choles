@@ -74,11 +74,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                   $mail->isHTML(true);
                   $mail->Subject = 'OTP Verification - CHOLES';
-                  $mail->Body = "<h3>Hello $fname,</h3>
-                              <p>Your OTP code is: <strong>$otp</strong></p>
-                              <p>Please enter this code to verify your account.</p>";
+                  $mail->Body = "<div style='font-family: Arial, sans-serif; color: #333; max-width: 500px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; background: #f9f9f9; text-align: center;'>
+                                    <h3 style='color: #2c3e50;'>Hello, " . htmlspecialchars($fname) . "!</h3>
+                                    <p style='font-size: 16px; line-height: 1.5;'>Your OTP code is:</p>
+                                    <div style='display: inline-block; font-size: 24px; font-weight: bold; color: #e74c3c; background: #fff; padding: 10px 20px; border: 2px dashed #e74c3c; border-radius: 5px; margin: 10px 0;'>
+                                        " . htmlspecialchars($otp) . "
+                                    </div>
+                                    <p style='font-size: 16px; line-height: 1.5;'>Please enter this code to verify your account.</p>
+                                    <p style='font-size: 14px; color: #777;'>This OTP will expire in 10 minutes. Do not share it with anyone.</p>
+                                </div>
+                            ";
 
                   $mail->send();
+
 
                   header("Location: otp.php");
                   exit();

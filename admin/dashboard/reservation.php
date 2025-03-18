@@ -13,10 +13,17 @@ $sql = "SELECT
             r.id AS reservation_id,
             cpm.id AS customer_package_id,
             CONCAT(c.fname, ' ', c.lname) AS customer_name,
+            c.email,
             r.event_date,
             r.status,
+            r.event_type,
+            r.event_theme,
+            r.start_time,
+            r.end_time,
             r.downpayment_price,
             r.down_payment,
+            r.refund_img,
+            r.refund_proof,
             p.package_name,
             p.package_price,
             p.people_count,
@@ -203,6 +210,8 @@ $result = $con->query($sql);
                                     <button type="button" class="btn me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"><i class="fas fa-times"></i></button>
                                 </div>
                             </div>
+                            <div>
+                        </div>
                         </div>
                     </div>
 
@@ -245,19 +254,27 @@ $result = $con->query($sql);
                             echo "<td>" . $status . "</td>";
                             echo "<td>
                                     <button class='btn btn-success btn-sm view-btn'
+                                        data-id='" . htmlspecialchars($row['reservation_id']) . "'
                                         data-customer='" . htmlspecialchars($row['customer_name']) . "' 
                                         data-package='" . htmlspecialchars($row['package_name']) . "' 
                                         data-venue='" . htmlspecialchars($row['venue']) . "' 
                                         data-event-date='" . htmlspecialchars($row['event_date']) . "' 
+                                        data-event-type='" . htmlspecialchars($row['event_type']) . "' 
+                                        data-event-theme='" . htmlspecialchars($row['event_theme']) . "' 
+                                        data-start-time='" . htmlspecialchars($row['start_time']) . "' 
+                                        data-end-time='" . htmlspecialchars($row['end_time']) . "' 
                                         data-price='" . htmlspecialchars($row['package_price']) . "' 
                                         data-downpayment='" . htmlspecialchars($row['downpayment_price']) . "' 
                                         data-status='" . $status . "'
-                                        data-image='" . htmlspecialchars($row['down_payment']) . "'>
+                                        data-image='" . htmlspecialchars($row['down_payment']) . "'
+                                        data-refund-image='" . htmlspecialchars($row['refund_img']) . "'
+                                        data-refund-proof='" . htmlspecialchars($row['refund_proof']) . "'>
                                         View
-                                    </button>";
+                                    </button>
+                                    ";
 
                             // Display "Approve" button only if status is NOT "cancelled" or "completed"
-                            if ($status !== 'cancelled' && $status !== 'completed' && $status !== 'approved') {
+                            if ($status !== 'cancelled' && $status !== 'completed' && $status !== 'approved' && $status !== 'refunded') {
                                 echo "<form method='POST' action='./update_status.php' style='display:inline;'>
                                         <input type='hidden' name='reservationId' value='" . htmlspecialchars($row['reservation_id']) . "'>
                                         <input type='hidden' name='status' value='approved'>
@@ -266,7 +283,7 @@ $result = $con->query($sql);
                             }
 
                             // Display "Complete" button only if status is NOT "cancelled" or "completed"
-                            if ($status !== 'cancelled' && $status !== 'completed') {
+                            if ($status !== 'cancelled' && $status !== 'completed' && $status !== 'refunded') {
                                 echo "<form method='POST' action='./update_status.php' style='display:inline;'>
                                         <input type='hidden' name='reservationId' value='" . htmlspecialchars($row['reservation_id']) . "'>
                                         <input type='hidden' name='status' value='completed'>
@@ -275,13 +292,14 @@ $result = $con->query($sql);
                             }
 
                             // Display "Cancel" button only if status is NOT "approved" or "completed"
-                            if ($status !== 'approved' && $status !== 'completed' && $status !== 'cancelled') {
+                            if ($status !== 'approved' && $status !== 'completed' && $status !== 'cancelled' && $status !== 'refunded') {
                                 echo "<form method='POST' action='./update_status.php' style='display:inline;'>
                                         <input type='hidden' name='reservationId' value='" . htmlspecialchars($row['reservation_id']) . "'>
                                         <input type='hidden' name='status' value='cancelled'>
                                         <button type='submit' class='btn btn-info btn-sm'>Cancel</button>
                                     </form>";
                             }
+
 
                             echo "</td>";
                             echo "</tr>";
@@ -325,6 +343,22 @@ $result = $con->query($sql);
                         <td id="modalEventDate"></td>
                     </tr>
                     <tr>
+                        <th>Event Type</th>
+                        <td id="modalEventType"></td>
+                    </tr>
+                    <tr>
+                        <th>Event Theme</th>
+                        <td id="modalEventTheme"></td>
+                    </tr>
+                    <tr>
+                        <th>Start Time</th>
+                        <td id="modalEventStart"></td>
+                    </tr>
+                    <tr>
+                        <th>End Time</th>
+                        <td id="modalEventEnd"></td>
+                    </tr>
+                    <tr>
                         <th>Package Price</th>
                         <td id="modalPrice"></td>
                     </tr>
@@ -339,6 +373,14 @@ $result = $con->query($sql);
                     <tr>
                         <th>Downpayment Proof</th>
                         <td id="modalImage"></td>
+                    </tr>
+                    <tr id="RefundRow">
+                        <th>Refund Image</th>
+                        <td id="modalRefund"></td>
+                    </tr>
+                    <tr id="RefundProofRow">
+                        <th>Refund Proof Image</th>
+                        <td id="modalRefundProof"></td>
                     </tr>
                 </table>
             </div>
@@ -398,7 +440,7 @@ $result = $con->query($sql);
 <script>
 $(document).ready(function () {
     $(".view-btn").click(function () {
-        // Get data attributes from the button
+        let reservationId = $(this).data("id");
         let customer = $(this).data("customer");
         let package = $(this).data("package");
         let venue = $(this).data("venue");
@@ -407,6 +449,12 @@ $(document).ready(function () {
         let downpayment = $(this).data("downpayment");
         let status = $(this).data("status");
         let image = $(this).data("image");
+        let refund = $(this).data("refund-image");
+        let refundproof = $(this).data("refund-proof");
+        let eventType = $(this).data("event-type");
+        let eventTheme = $(this).data("event-theme");
+        let eventStart = $(this).data("start-time");
+        let eventEnd = $(this).data("end-time");
 
         // Set modal content
         $("#modalCustomer").text(customer);
@@ -416,12 +464,44 @@ $(document).ready(function () {
         $("#modalPrice").text(price);
         $("#modalDownpayment").text(downpayment);
         $("#modalStatus").text(status);
+        $("#modalEventType").text(eventType);
+        $("#modalEventTheme").text(eventTheme);
+        $("#modalEventStart").text(eventStart);
+        $("#modalEventEnd").text(eventEnd);
 
-        // Display image if available
+        // Display downpayment proof
         if (image) {
-            $("#modalImage").html(`<img src="../../customer/${image}" class="img-fluid" style="max-width: 300px; alt="Downpayment Proof">`);
+            $("#modalImage").html(`<img src="../../customer/${image}" class="img-fluid" style="max-width: 300px;" alt="Downpayment Proof">`);
         } else {
             $("#modalImage").html("No image available");
+        }
+
+        // Display refund image
+        if (refund) {
+            $("#RefundRow").show();
+            $("#modalRefund").html(`<img src="../../customer/${refund}" class="img-fluid" style="max-width: 300px;" alt="Refund Image">`);
+        } else {
+            $("#RefundRow").hide();
+        }
+
+        // Show refund proof form only if status is "cancelled"
+        if (status === "cancelled") {
+            $("#RefundProofRow").show();
+            $("#modalRefundProof").html(`
+                <img src="${refundproof}" class="img-fluid" style="max-width: 300px;" alt="Refund Proof">
+                <form action="./upload_refund_proof.php" method="post" enctype="multipart/form-data">
+                    <input type="hidden" name="id" value="${reservationId}">
+                    <input type="file" name="refund_proof" id="refund_proof">
+                    <input type="submit" value="Submit" class="btn btn-sm btn-success">
+                </form> <br>
+            `);
+        } else if(status === "refunded") {
+            $("#RefundProofRow").show();
+            $("#modalRefundProof").html(`
+                <img src="${refundproof}" class="img-fluid" style="max-width: 300px;" alt="Refund Proof">
+            `);
+        } else {
+            $("#RefundProofRow").hide();
         }
 
         // Show modal
