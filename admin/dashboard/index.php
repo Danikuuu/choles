@@ -414,7 +414,30 @@ $historyResult = $con->query($history);
                     </div>
 
                     <!-- Content Row -->
+                    <div class="row">
+                    <select id="yearSelect"></select>  
+<select id="monthSelect">
+    <option value="">All Months</option>  
+    <option value="1">January</option>  
+    <option value="2">February</option>  
+    <option value="3">March</option>  
+    <option value="4">April</option>  
+    <option value="5">May</option>  
+    <option value="6">June</option>  
+    <option value="7">July</option>  
+    <option value="8">August</option>  
+    <option value="9">September</option>  
+    <option value="10">October</option>  
+    <option value="11">November</option>  
+    <option value="12">December</option>  
+</select>  
 
+<select id="filterSelect">  
+    <option value="year">Yearly</option>  
+    <option value="month">Monthly</option>  
+</select>  
+
+                    </div>
                     <div class="row">
 
                         <!-- Area Chart -->
@@ -433,6 +456,8 @@ $historyResult = $con->query($history);
                                 </div>
                             </div>
                         </div>
+
+                        
 
                         <!-- Pie Chart -->
                         <div class="col-xl-4 col-lg-5">
@@ -487,8 +512,37 @@ $historyResult = $con->query($history);
 
                         <div class="col-lg-6 mb-4">
 
-                            <!-- Illustrations -->
-                            <div class="card shadow mb-4">
+                        <div class="card shadow mb-4">
+                                <div class="card-header py-3">
+                                    <h6 class="m-0 font-weight-bold text-success">Most Sold Package</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="chart-bar">
+                                        <canvas id="myBarChart2"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div class="col-lg-6 mb-4">
+
+                        <div class="card shadow mb-4">
+                                <div class="card-header py-3">
+                                    <h6 class="m-0 font-weight-bold text-success">Most Sold Menu</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="chart-bar">
+                                        <canvas id="myBarChart3"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div class="col-lg-6 mb-4">
+                              <!-- Illustrations -->
+                              <div class="card shadow mb-4">
                         <div class="card-header py-3">
                             <h6 class="m-0 font-weight-bold text-success">History</h6>
                         </div>
@@ -523,6 +577,7 @@ $historyResult = $con->query($history);
                                     </tbody>
                                 </table>
                             </div>
+                        </div>
                         </div>
                     </div>
 
@@ -595,116 +650,148 @@ $historyResult = $con->query($history);
 
 <!-- Line Chart -->
 <script>
-    Chart.defaults.font.family = 'Nunito, -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
-    Chart.defaults.color = '#858796';
+document.addEventListener("DOMContentLoaded", function () {
+    const yearSelect = document.getElementById("yearSelect");
+    const monthSelect = document.getElementById("monthSelect");
+    const filterSelect = document.getElementById("filterSelect");
 
+    let earningsChart = null, statusChart = null, packageChart = null, menuChart = null;
 
-    const months = <?php echo $monthsJSON; ?>; 
-    const earnings = <?php echo $earningsJSON; ?>;
+    // Populate year dropdown (from current year to 2020)
+    const currentYear = new Date().getFullYear();
+    for (let year = currentYear; year >= 2020; year--) {
+        let option = document.createElement("option");
+        option.value = year;
+        option.textContent = year;
+        yearSelect.appendChild(option);
+    }
+    yearSelect.value = currentYear;
 
-    console.log(months)
+    function fetchAndUpdateData(filter = "year", year = currentYear, month = "") {
+        fetch(`fetch_data.php?filter=${filter}&year=${year}&month=${month}`)
+            .then(response => response.json())
+            .then(data => {
+                if (earningsChart) earningsChart.destroy();
+                if (statusChart) statusChart.destroy();
+                if (packageChart) packageChart.destroy();
+                if (menuChart) menuChart.destroy();
 
-    const canvas = document.getElementById("myAreaChart");
-    if (canvas) {
-        const ctx = canvas.getContext("2d");
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: months, 
-                datasets: [{
-                    label: "Total Earnings ₱",
-                    data: earnings,
-                    lineTension: 0.3,
-                    backgroundColor: "rgba(78, 115, 223, 0.05)",
-                    borderColor: "rgba(78, 115, 223, 1)",
-                    pointRadius: 3,
-                    pointBackgroundColor: "rgba(78, 115, 223, 1)",
-                    pointBorderColor: "rgba(78, 115, 223, 1)",
-                    pointHoverRadius: 3,
-                    pointHoverBackgroundColor: "rgba(78, 115, 223, 1)",
-                    pointHoverBorderColor: "rgba(78, 115, 223, 1)",
-                    pointHitRadius: 10,
-                    pointBorderWidth: 2
-                }]
-            },
-            options: {
-                maintainAspectRatio: false,
-                layout: { padding: { left: 10, right: 25, top: 25, bottom: 0 } },
-                scales: {
-                    x: { grid: { display: false }, ticks: { maxTicksLimit: 7 } },
-                    y: {
-                        ticks: {
-                            maxTicksLimit: 5,
-                            padding: 10,
+                // Line Chart (Earnings)
+                const ctxEarnings = document.getElementById("myAreaChart").getContext("2d");
+                earningsChart = new Chart(ctxEarnings, {
+                    type: "line",
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            label: "Total Earnings ₱",
+                            data: data.earnings,
+                            lineTension: 0.3,
+                            backgroundColor: "rgba(78, 115, 223, 0.05)",
+                            borderColor: "rgba(78, 115, 223, 1)",
+                            pointRadius: 3,
+                            pointBackgroundColor: "rgba(78, 115, 223, 1)",
+                            pointBorderColor: "rgba(78, 115, 223, 1)",
+                            pointHoverRadius: 3,
+                            pointHoverBackgroundColor: "rgba(78, 115, 223, 1)",
+                            pointHoverBorderColor: "rgba(78, 115, 223, 1)",
+                            pointHitRadius: 10,
+                            pointBorderWidth: 2
+                        }]
+                    },
+                    options: {
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: { grid: { display: false }, ticks: { maxTicksLimit: 7 } },
+                            y: {
+                                ticks: { maxTicksLimit: 5, padding: 10 },
+                                grid: { color: "rgb(234, 236, 244)", zeroLineColor: "rgb(234, 236, 244)" }
+                            }
                         },
-                        grid: {
-                            color: "rgb(234, 236, 244)",
-                            zeroLineColor: "rgb(234, 236, 244)",
-                            drawBorder: false,
-                            borderDash: [2],
-                            zeroLineBorderDash: [2]
+                        plugins: { legend: { display: false } }
+                    }
+                });
+
+                // Doughnut Chart (Order Status)
+                const ctxStatus = document.getElementById("myPieChart").getContext("2d");
+                statusChart = new Chart(ctxStatus, {
+                    type: "doughnut",
+                    data: {
+                        labels: data.statusLabels,
+                        datasets: [{
+                            data: data.statusCounts,
+                            backgroundColor: ["#4e73df", "#1cc88a", "#36b9cc", "#f6c23e"],
+                            hoverBackgroundColor: ["#2e59d9", "#17a673", "#2c9faf", "#f4b619"],
+                            hoverBorderColor: "rgba(234, 236, 244, 1)"
+                        }]
+                    },
+                    options: {
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        cutoutPercentage: 70
+                    }
+                });
+
+                // Bar Chart (Most Sold Packages)
+                const ctxPackage = document.getElementById("myBarChart2").getContext("2d");
+                packageChart = new Chart(ctxPackage, {
+                    type: "bar",
+                    data: {
+                        labels: data.mostSoldPackages.map(item => item.name),
+                        datasets: [{
+                            label: "Units Sold",
+                            data: data.mostSoldPackages.map(item => item.count),
+                            backgroundColor: "#1cc88a",
+                            borderColor: "#1cc88a",
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: { beginAtZero: true }
                         }
                     }
-                },
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {  
-                        tooltips: {
-                            backgroundColor: "rgb(255,255,255)",
-                            bodyFontColor: "#858796",
-                            borderColor: '#dddfeb',
-                            borderWidth: 1,
-                            xPadding: 15,
-                            yPadding: 15,
-                            displayColors: false,
-                            caretPadding: 10,
+                });
+
+                // Bar Chart (Most Sold Items)
+                const ctxMenu = document.getElementById("myBarChart3").getContext("2d");
+                menuChart = new Chart(ctxMenu, {
+                    type: "bar",
+                    data: {
+                        labels: data.mostSoldMenus.map(item => item.name),
+                        datasets: [{
+                            label: "Units Sold",
+                            data: data.mostSoldMenus.map(item => item.count),
+                            backgroundColor: "#f6c23e",
+                            borderColor: "#f6c23e",
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: { beginAtZero: true }
                         }
                     }
-                }
-            }
-        });
+                });
+            })
+            .catch(error => console.error("Error fetching data:", error));
     }
+
+    // Fetch initial data
+    fetchAndUpdateData();
+
+    // Update charts on filter change
+    function updateData() {
+        fetchAndUpdateData(filterSelect.value, yearSelect.value, monthSelect.value);
+    }
+
+    filterSelect.addEventListener("change", updateData);
+    yearSelect.addEventListener("change", updateData);
+    monthSelect.addEventListener("change", updateData);
+});
 </script>
 
-<script>
-    const labels = <?php echo $labelsJSON; ?>;
-    const statusCounts = <?php echo $statusCountsJSON; ?>;
-    
-    var ctx = document.getElementById("myPieChart");
-    if (ctx) {
-        var myPieChart = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: labels,
-                datasets: [{
-                    data: statusCounts, 
-                    backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e'],
-                    hoverBackgroundColor: ['#2e59d9', '#17a673', '#2c9faf', '#f4b619'],
-                    hoverBorderColor: "rgba(234, 236, 244, 1)",
-                }],
-            },
-            options: {
-                maintainAspectRatio: false,
-                tooltips: {
-                    backgroundColor: "rgb(255,255,255)",
-                    bodyFontColor: "#858796",
-                    borderColor: '#dddfeb',
-                    borderWidth: 1,
-                    xPadding: 15,
-                    yPadding: 15,
-                    displayColors: false,
-                    caretPadding: 10,
-                },
-                plugins:{
-                    legend: {
-                        display: false
-                    }
-                },
-                cutoutPercentage: 70,
-            },
-        });
-    }
-</script>
 
 <script>
     const itemNames = <?php echo $itemNamesJSON; ?>;

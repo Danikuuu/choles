@@ -165,7 +165,24 @@ $result = $con->query($sql);
 
                     <div class="d-sm-flex align-items-center justify-content-between mb-4 position-relative">
                         <h1 class="h3 mb-0 text-gray-800">Users</h1>
-
+                        <div class=" p-3" style="z-index: 11">
+                            <div id="toastMessage" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                                <div class="d-flex">
+                                    <div class="toast-body">
+                                        <?php
+                                        if (isset($_SESSION['success'])) {
+                                            echo $_SESSION['success'];
+                                            unset($_SESSION['success']); // Clear message after showing
+                                        } elseif (isset($_SESSION['error'])) {
+                                            echo $_SESSION['error'];
+                                            unset($_SESSION['error']); // Clear message after showing
+                                        }
+                                        ?>
+                                    </div>
+                                    <button type="button" class="btn me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"><i class="fas fa-times"></i></button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                 </div>
@@ -186,26 +203,34 @@ $result = $con->query($sql);
                         <th>City/Municipality</th>
                         <th>Barangay</th>
                         <th>Street</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php
-                    if ($result->num_rows > 0) {
-                        while ($row = $result->fetch_assoc()) {
-                            echo "<tr>";
-                            echo "<td>" . htmlspecialchars($row['fname']) . "</td>";
-                            echo "<td>" . htmlspecialchars($row['mobile']) . "</td>";
-                            echo "<td>". htmlspecialchars($row['email']) . "</td>";
-                            echo "<td>" . htmlspecialchars($row['province']) . "</td>"; // Replace with actual count column
-                            echo "<td>" . htmlspecialchars($row['city']) . "</td>";
-                            echo "<td>". htmlspecialchars($row['barangay']) . "</td>"; // Replace with actual price column
-                            echo "<td>". htmlspecialchars($row['street']) . "</td>"; // Replace with actual status column
-                            echo "</tr>";
-                        }
-                    } else {
-                        echo "<tr><td colspan='8' class='text-center'>No records found</td></tr>";
-                    }
-                    ?>
+                <?php
+if ($result->num_rows > 0) {
+    while ($row = $result->fetch_assoc()) {
+        echo "<tr>";
+        echo "<td>" . htmlspecialchars($row['fname']) . "</td>";
+        echo "<td>" . htmlspecialchars($row['mobile']) . "</td>";
+        echo "<td>" . htmlspecialchars($row['email']) . "</td>";
+        echo "<td>" . htmlspecialchars($row['province']) . "</td>";
+        echo "<td>" . htmlspecialchars($row['city']) . "</td>";
+        echo "<td>" . htmlspecialchars($row['barangay']) . "</td>";
+        echo "<td>" . htmlspecialchars($row['street']) . "</td>";
+        echo "<td>
+                <form action='delete_user.php' method='POST' onsubmit='return confirm(\"Are you sure you want to delete this user?\");'>
+                    <input type='hidden' name='user_id' value='" . htmlspecialchars($row['id']) . "'>
+                    <button type='submit' name='submit' class='btn btn-danger'>Delete</button>
+                </form>
+              </td>";
+        echo "</tr>";
+    }
+} else {
+    echo "<tr><td colspan='8' class='text-center'>No records found</td></tr>";
+}
+?>
+
                 </tbody>
             </table>
         </div>
