@@ -9,9 +9,20 @@ if (!isset($_SESSION["user_id"]) || $_SESSION["role"] == 0 || $_SESSION["role"] 
 
 require_once '../../data-handling/db/connection.php';
 
-$sql = "SELECT * from user where role = 0";
+$limit = 10; // Number of records per page
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$offset = ($page - 1) * $limit;
 
+// Fetch paginated data
+$sql = "SELECT * FROM user WHERE role = 0 LIMIT $limit OFFSET $offset";
 $result = $con->query($sql);
+
+// Get total number of records for pagination
+$total_sql = "SELECT COUNT(*) AS total FROM user WHERE role = 0";
+$total_result = $con->query($total_sql);
+$total_row = $total_result->fetch_assoc();
+$total_records = $total_row['total'];
+$total_pages = ceil($total_records / $limit);
 
 ?>
 
@@ -48,10 +59,7 @@ $result = $con->query($sql);
 
         <ul class="navbar-nav sidebar sidebar-dark accordion" id="accordionSidebar" style="background-color:  #059652;">
 
-            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.html">
-                <div class="sidebar-brand-icon rotate-n-15">
-                    <i class="fas fa-laugh-wink"></i>
-                </div>
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.php">
                 <div class="sidebar-brand-text mx-3">CHOLES <sup>Admin</sup></div>
             </a>
 
@@ -81,6 +89,13 @@ $result = $con->query($sql);
                     <span>Packages</span></a>
             </li>
 
+            <li class="nav-item">
+                <a class="nav-link" href="./messages.php">
+                    <i class="fas fa-envelope"></i> Messages
+                    <span id="unreadBadge" class="badge badge-danger" style="display: none;"></span>
+                </a>
+            </li>
+
             <hr class="sidebar-divider">
 
             <div class="sidebar-heading">
@@ -91,6 +106,12 @@ $result = $con->query($sql);
                 <a class="nav-link" href="./reservation.php">
                     <i class="fas fa-fw fa-folder"></i>
                     <span>Reservations</span></a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link" href="./coupon.php">
+                    <i class="fas fa-fw fa-folder"></i>
+                    <span>Coupon</span></a>
             </li>
 
             <!-- Anomyties -->
@@ -106,7 +127,7 @@ $result = $con->query($sql);
                     <span>Feedback</span></a>
             </li>
 
-            <li class="nav-item ">
+            <li class="nav-item active">
                 <a class="nav-link" href="./users.php">
                     <i class="fas fa-fw fa-user"></i>
                     <span>Users</span></a>
@@ -132,7 +153,24 @@ $result = $con->query($sql);
 
                     <ul class="navbar-nav ml-auto">
 
-
+                    <li class="nav-item dropdown no-arrow mx-1">
+                        <a class="nav-link dropdown-toggle" href="#" id="notificationDropdown" role="button"
+                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-bell fa-fw"></i>
+                            <!-- Counter - Notifications -->
+                            <span class="badge badge-danger badge-counter" id="notificationCount">0</span>
+                        </a>
+                        <!-- Dropdown - Notifications -->
+                        <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                            aria-labelledby="notificationDropdown">
+                            <h6 class="dropdown-header">
+                                Notifications
+                            </h6>
+                            <div id="notificationList">
+                                <p class="text-center p-3 text-gray-600">No new notifications</p>
+                            </div>
+                        </div>
+                    </li>
                         <div class="topbar-divider d-none d-sm-block"></div>
 
                         <li class="nav-item dropdown no-arrow">
@@ -191,51 +229,65 @@ $result = $con->query($sql);
                 <div class="row justify-content-center align-items-center px-5">
                 <div class="card shadow w-100">
                 <div class="card shadow w-100">
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Number</th>
-                        <th>Email</th>
-                        <th>Province</th>
-                        <th>City/Municipality</th>
-                        <th>Barangay</th>
-                        <th>Street</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                <?php
-if ($result->num_rows > 0) {
-    while ($row = $result->fetch_assoc()) {
-        echo "<tr>";
-        echo "<td>" . htmlspecialchars($row['fname']) . "</td>";
-        echo "<td>" . htmlspecialchars($row['mobile']) . "</td>";
-        echo "<td>" . htmlspecialchars($row['email']) . "</td>";
-        echo "<td>" . htmlspecialchars($row['province']) . "</td>";
-        echo "<td>" . htmlspecialchars($row['city']) . "</td>";
-        echo "<td>" . htmlspecialchars($row['barangay']) . "</td>";
-        echo "<td>" . htmlspecialchars($row['street']) . "</td>";
-        echo "<td>
-                <form action='delete_user.php' method='POST' onsubmit='return confirm(\"Are you sure you want to delete this user?\");'>
-                    <input type='hidden' name='user_id' value='" . htmlspecialchars($row['id']) . "'>
-                    <button type='submit' name='submit' class='btn btn-danger'>Delete</button>
-                </form>
-              </td>";
-        echo "</tr>";
-    }
-} else {
-    echo "<tr><td colspan='8' class='text-center'>No records found</td></tr>";
-}
-?>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Number</th>
+                                        <th>Email</th>
+                                        <th>Province</th>
+                                        <th>City/Municipality</th>
+                                        <th>Barangay</th>
+                                        <th>Street</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                <?php if ($result->num_rows > 0) : ?>
+                                    <?php while ($row = $result->fetch_assoc()) : ?>
+                                        <tr>
+                                            <td><?= htmlspecialchars($row['fname']); ?></td>
+                                            <td><?= htmlspecialchars($row['mobile']); ?></td>
+                                            <td><?= htmlspecialchars($row['email']); ?></td>
+                                            <td><?= htmlspecialchars($row['province']); ?></td>
+                                            <td><?= htmlspecialchars($row['city']); ?></td>
+                                            <td><?= htmlspecialchars($row['barangay']); ?></td>
+                                            <td><?= htmlspecialchars($row['street']); ?></td>
+                                            <td>
+                                                <form action='delete_user.php' method='POST' onsubmit='return confirm("Are you sure you want to delete this user?");'>
+                                                    <input type='hidden' name='user_id' value='<?= htmlspecialchars($row['id']); ?>'>
+                                                    <button type='submit' name='submit' class='btn btn-danger'>Delete</button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    <?php endwhile; ?>
+                                <?php else : ?>
+                                    <tr><td colspan='8' class='text-center'>No records found</td></tr>
+                                <?php endif; ?>
+                                </tbody>
+                            </table>
+                            <nav>
+    <ul class="pagination justify-content-center">
+        <?php if ($page > 1) : ?>
+            <li class="page-item"><a class="page-link" href="?page=<?= ($page - 1); ?>">Previous</a></li>
+        <?php endif; ?>
 
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
+        <?php for ($i = 1; $i <= $total_pages; $i++) : ?>
+            <li class="page-item <?= ($i == $page ? "active" : ""); ?>">
+                <a class="page-link" href="?page=<?= $i; ?>"><?= $i; ?></a>
+            </li>
+        <?php endfor; ?>
+
+        <?php if ($page < $total_pages) : ?>
+            <li class="page-item"><a class="page-link" href="?page=<?= ($page + 1); ?>">Next</a></li>
+        <?php endif; ?>
+    </ul>
+</nav>
+                        </div>
+                    </div>
+                </div>
                     </div>
                 </div>
 
@@ -294,7 +346,58 @@ if ($result->num_rows > 0) {
         }
     });
     </script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    function fetchNotifications() {
+        fetch("fetch_notifications.php") // Replace with your backend endpoint
+            .then(response => response.json())
+            .then(data => {
+                let count = data.length;
+                let notificationCount = document.getElementById("notificationCount");
+                let notificationList = document.getElementById("notificationList");
 
+                if (count > 0) {
+                    notificationCount.innerText = count;
+                    notificationCount.style.display = "inline-block";
+
+                    notificationList.innerHTML = "";
+                    data.forEach(notification => {
+                        let item = document.createElement("a");
+                        item.href = "#"; // Update with actual link
+                        item.classList.add("dropdown-item", "d-flex", "align-items-center");
+                        item.innerHTML = `
+                            <div class="mr-3">
+                                <div class="icon-circle bg-primary">
+                                    <i class="fas fa-info text-white"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="small text-gray-500">${notification.date}</div>
+                                <span class="font-weight-bold">${notification.message}</span>
+                            </div>
+                        `;
+                        notificationList.appendChild(item);
+                    });
+                } else {
+                    notificationCount.style.display = "none";
+                    notificationList.innerHTML = '<p class="text-center p-3 text-gray-600">No new notifications</p>';
+                }
+            });
+    }
+
+    // Fetch notifications when page loads
+    fetchNotifications();
+
+    // Mark notifications as seen when dropdown is clicked
+    document.getElementById("notificationDropdown").addEventListener("click", function () {
+        fetch("mark_reservations_seen.php", { method: "POST" });
+        document.getElementById("notificationCount").style.display = "none";
+    });
+
+    // Auto-refresh notifications every 30 seconds
+    setInterval(fetchNotifications, 30000);
+});
+</script>
 </body>
 
 </html>

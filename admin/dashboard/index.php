@@ -8,96 +8,6 @@ if (!isset($_SESSION["user_id"]) || $_SESSION["role"] == 0 || $_SESSION["role"] 
 
 require_once '../../data-handling/db/connection.php';
 
-$monthEarnings = "SELECT SUM(p.package_price) AS earnings_this_month
-                    FROM reservations r
-                    JOIN customer_package_menu cpm ON r.customer_package_id = cpm.id
-                    JOIN package p ON cpm.package_id = p.id
-                    WHERE r.status = 'completed'
-                    AND MONTH(r.event_date) = MONTH(CURRENT_DATE())
-                    AND YEAR(r.event_date) = YEAR(CURRENT_DATE());";
-$monthResult = $con->query($monthEarnings);
-
-$monthEarnings = 0; 
-if ($monthResult) {
-    $row = $monthResult->fetch_assoc();
-    $monthEarnings = $row['earnings_this_month'] ?? 0;
-}
-
-$yearResult = "SELECT SUM(p.package_price) AS earnings_this_year
-                      FROM reservations r
-                      JOIN customer_package_menu cpm ON r.customer_package_id = cpm.id
-                      JOIN package p ON cpm.package_id = p.id
-                      WHERE r.status = 'completed'
-                      AND YEAR(r.event_date) = YEAR(CURRENT_DATE());";
-
-$yearResult = $con->query($yearResult);
-
-$yearEarnings = 0;
-if ($yearResult) {
-    $row = $yearResult->fetch_assoc();
-    $yearEarnings = $row['earnings_this_year'] ?? 0;
-}
-
-$reservationQuery = "SELECT COUNT(*) AS total_reservations FROM reservations";
-
-$reservationResult = $con->query($reservationQuery);
-
-$numberOfReservations = 0;
-if ($reservationResult) {
-    $row = $reservationResult->fetch_assoc();
-    $numberOfReservations = $row['total_reservations'] ?? 0;
-}
-
-$pendingReservationQuery = "SELECT COUNT(*) AS total_pending_reservations FROM reservations WHERE status = 'pending'";
-
-$pendingResult = $con->query($pendingReservationQuery);
-
-$totalPendingReservations = 0; 
-if ($pendingResult) {
-    $row = $pendingResult->fetch_assoc();
-    $totalPendingReservations = $row['total_pending_reservations'] ?? 0; 
-}
-
-$earningsQuery = "SELECT 
-    months.month, 
-    COALESCE(SUM(p.package_price), 0) AS total_earnings
-FROM (
-    SELECT 1 AS month UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION
-    SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION 
-    SELECT 9 UNION SELECT 10 UNION SELECT 11 UNION SELECT 12
-) AS months
-LEFT JOIN reservations r 
-    ON MONTH(r.event_date) = months.month 
-    AND YEAR(r.event_date) = YEAR(CURRENT_DATE()) 
-    AND r.status = 'completed'
-LEFT JOIN customer_package_menu cpm 
-    ON r.customer_package_id = cpm.id
-LEFT JOIN package p 
-    ON cpm.package_id = p.id
-GROUP BY months.month
-ORDER BY months.month;
-
-";
-
-$result = $con->query($earningsQuery);
-
-$allMonths = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-$months = [];
-$earnings = [];
-
-while ($row = $result->fetch_assoc()) {
-    $months[] = date("M", mktime(0, 0, 0, $row["month"], 1));
-    $earnings[] = $row["total_earnings"];
-}
-
-$finalEarnings = array_fill(0, 12, 0);
-foreach ($months as $index => $month) {
-    $finalEarnings[array_search($month, $allMonths)] = $earnings[$index];
-}
-
-$monthsJSON = json_encode($allMonths);
-$earningsJSON = json_encode($finalEarnings);
-
 $statusCount = "SELECT status, COUNT(*) as count FROM reservations GROUP BY status";
 $statusResult = $con->query($statusCount);
 
@@ -189,9 +99,6 @@ $historyResult = $con->query($history);
 
             <!-- Sidebar - Brand -->
             <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.php">
-                <div class="sidebar-brand-icon rotate-n-15">
-                    <i class="fas fa-laugh-wink"></i>
-                </div>
                 <div class="sidebar-brand-text mx-3">CHOLES <sup>Admin</sup></div>
             </a>
 
@@ -226,6 +133,13 @@ $historyResult = $con->query($history);
                     <span>Packages</span></a>
             </li>
 
+            <li class="nav-item">
+                <a class="nav-link" href="./messages.php">
+                    <i class="fas fa-envelope"></i> Messages
+                    <span id="unreadBadge" class="badge badge-danger" style="display: none;"></span>
+                </a>
+            </li>
+
             <!-- Divider -->
             <hr class="sidebar-divider">
 
@@ -238,6 +152,12 @@ $historyResult = $con->query($history);
                 <a class="nav-link" href="./reservation.php">
                     <i class="fas fa-fw fa-folder"></i>
                     <span>Reservations</span></a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link" href="./coupon.php">
+                    <i class="fas fa-fw fa-folder"></i>
+                    <span>Coupon</span></a>
             </li>
 
             <!-- Anomyties -->
@@ -277,41 +197,59 @@ $historyResult = $con->query($history);
                 <!-- Topbar -->
                 <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
 
-                    <!-- Sidebar Toggle (Topbar) -->
-                    <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
-                        <i class="fa fa-bars"></i>
-                    </button>
+                <!-- Sidebar Toggle (Topbar) -->
+                <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
+                    <i class="fa fa-bars"></i>
+                </button>
 
-                    <!-- Topbar Navbar -->
-                    <ul class="navbar-nav ml-auto">
+                <!-- Topbar Navbar -->
+                <ul class="navbar-nav ml-auto">
 
-
-                        <div class="topbar-divider d-none d-sm-block"></div>
-
-                        <!-- Nav Item - User Information -->
-                        <li class="nav-item dropdown no-arrow">
-                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">CHOLES Admin</span>
-                                <img class="img-profile rounded-circle"
-                                    src="img/undraw_profile.svg">
-                            </a>
-                            <!-- Dropdown - User Information -->
-                            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                                aria-labelledby="userDropdown">
-                                <a class="dropdown-item" href="./profile.php">
-                                    <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Profile
-                                </a>
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="../../destroy.php" data-toggle="modal" data-target="#logoutModal">
-                                    <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Logout
-                                </a>
+                    <!-- Notification Icon -->
+                    <li class="nav-item dropdown no-arrow mx-1">
+                        <a class="nav-link dropdown-toggle" href="#" id="notificationDropdown" role="button"
+                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-bell fa-fw"></i>
+                            <!-- Counter - Notifications -->
+                            <span class="badge badge-danger badge-counter" id="notificationCount">0</span>
+                        </a>
+                        <!-- Dropdown - Notifications -->
+                        <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                            aria-labelledby="notificationDropdown">
+                            <h6 class="dropdown-header">
+                                Notifications
+                            </h6>
+                            <div id="notificationList">
+                                <p class="text-center p-3 text-gray-600">No new notifications</p>
                             </div>
-                        </li>
+                        </div>
+                    </li>
 
-                    </ul>
+                    <div class="topbar-divider d-none d-sm-block"></div>
+
+                    <!-- User Information -->
+                    <li class="nav-item dropdown no-arrow">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <span class="mr-2 d-none d-lg-inline text-gray-600 small">CHOLES Admin</span>
+                            <img class="img-profile rounded-circle" src="img/undraw_profile.svg">
+                        </a>
+                        <!-- Dropdown - User Information -->
+                        <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                            aria-labelledby="userDropdown">
+                            <a class="dropdown-item" href="./profile.php">
+                                <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
+                                Profile
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="../../destroy.php" data-toggle="modal" data-target="#logoutModal">
+                                <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                                Logout
+                            </a>
+                        </div>
+                    </li>
+
+                </ul>
 
                 </nav>
                 <!-- End of Topbar -->
@@ -337,7 +275,7 @@ $historyResult = $con->query($history);
                                         <div class="col mr-2">
                                             <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
                                                 Earnings (This Month)</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">₱ <?php echo $monthEarnings ?></div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="monthEarnings"></div>
                                         </div>
                                         <div class="col-auto">
                                             <i class="fas fa-calendar fa-2x text-gray-300"></i>
@@ -355,7 +293,7 @@ $historyResult = $con->query($history);
                                         <div class="col mr-2">
                                             <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
                                                 Earnings (This Year)</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">₱ <?php echo $yearEarnings ?></div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="yearEarnings"></div>
                                         </div>
                                         <div class="col-auto">
                                             <i class="fas fa-money-bill-wave fa-2x text-gray-300"></i>
@@ -375,7 +313,7 @@ $historyResult = $con->query($history);
                                             </div>
                                             <div class="row no-gutters align-items-center">
                                                 <div class="col-auto">
-                                                    <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800"><?php echo $numberOfReservations ?></div>
+                                                    <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800" id="reservationsCount"></div>
                                                 </div>
                                                 <div class="col">
                                                     <div class="progress progress-sm mr-2">
@@ -402,7 +340,7 @@ $historyResult = $con->query($history);
                                         <div class="col mr-2">
                                             <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
                                                 Pending Requests</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?php echo $totalPendingReservations; ?></div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="pendingRequests"></div>
                                         </div>
                                         <div class="col-auto">
                                             <i class="fas fa-comments fa-2x text-gray-300"></i>
@@ -415,28 +353,29 @@ $historyResult = $con->query($history);
 
                     <!-- Content Row -->
                     <div class="row">
-                    <select id="yearSelect"></select>  
-<select id="monthSelect">
-    <option value="">All Months</option>  
-    <option value="1">January</option>  
-    <option value="2">February</option>  
-    <option value="3">March</option>  
-    <option value="4">April</option>  
-    <option value="5">May</option>  
-    <option value="6">June</option>  
-    <option value="7">July</option>  
-    <option value="8">August</option>  
-    <option value="9">September</option>  
-    <option value="10">October</option>  
-    <option value="11">November</option>  
-    <option value="12">December</option>  
-</select>  
+                    <div class="col-xl-8 col-lg-7 mb-4">
+                        <select class="btn border border-2" id="yearSelect"></select>  
+                        <select class="btn border border-2" id="monthSelect">
+                            <option value="">All Months</option>  
+                            <option value="1">January</option>  
+                            <option value="2">February</option>  
+                            <option value="3">March</option>  
+                            <option value="4">April</option>  
+                            <option value="5">May</option>  
+                            <option value="6">June</option>  
+                            <option value="7">July</option>  
+                            <option value="8">August</option>  
+                            <option value="9">September</option>  
+                            <option value="10">October</option>  
+                            <option value="11">November</option>  
+                            <option value="12">December</option>  
+                        </select>  
 
-<select id="filterSelect">  
-    <option value="year">Yearly</option>  
-    <option value="month">Monthly</option>  
-</select>  
-
+                        <select class="btn border border-2" id="filterSelect">  
+                            <option value="year">Yearly</option>  
+                            <option value="month">Monthly</option>  
+                        </select>  
+                    </div>
                     </div>
                     <div class="row">
 
@@ -676,6 +615,12 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (packageChart) packageChart.destroy();
                 if (menuChart) menuChart.destroy();
 
+                // Update earnings values
+                document.getElementById("monthEarnings").innerHTML = `₱ ${Number(data.monthEarnings).toLocaleString("en-PH", { minimumFractionDigits: 2 })}`;
+                document.getElementById("yearEarnings").innerHTML = `₱ ${Number(data.yearEarnings).toLocaleString("en-PH", { minimumFractionDigits: 2 })}`;
+                document.getElementById("reservationsCount").innerText = data.numberOfReservations;
+                document.getElementById("pendingRequests").innerText = data.totalPendingReservations;
+
                 // Line Chart (Earnings)
                 const ctxEarnings = document.getElementById("myAreaChart").getContext("2d");
                 earningsChart = new Chart(ctxEarnings, {
@@ -778,7 +723,7 @@ document.addEventListener("DOMContentLoaded", function () {
             .catch(error => console.error("Error fetching data:", error));
     }
 
-    // Fetch initial data
+    // Fetch initial data on load
     fetchAndUpdateData();
 
     // Update charts on filter change
@@ -790,6 +735,7 @@ document.addEventListener("DOMContentLoaded", function () {
     yearSelect.addEventListener("change", updateData);
     monthSelect.addEventListener("change", updateData);
 });
+
 </script>
 
 
@@ -874,6 +820,7 @@ document.addEventListener("DOMContentLoaded", function () {
             },
         }
     });
+
 </script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
@@ -882,6 +829,59 @@ document.addEventListener("DOMContentLoaded", function () {
             $(".sidebar").toggleClass("d-none d-md-block"); // Toggle sidebar visibility
         });
     });
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    function fetchNotifications() {
+        fetch("fetch_notifications.php") // Replace with your backend endpoint
+            .then(response => response.json())
+            .then(data => {
+                let count = data.length;
+                let notificationCount = document.getElementById("notificationCount");
+                let notificationList = document.getElementById("notificationList");
+
+                if (count > 0) {
+                    notificationCount.innerText = count;
+                    notificationCount.style.display = "inline-block";
+
+                    notificationList.innerHTML = "";
+                    data.forEach(notification => {
+                        let item = document.createElement("a");
+                        item.href = "#"; // Update with actual link
+                        item.classList.add("dropdown-item", "d-flex", "align-items-center");
+                        item.innerHTML = `
+                            <div class="mr-3">
+                                <div class="icon-circle bg-primary">
+                                    <i class="fas fa-info text-white"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="small text-gray-500">${notification.date}</div>
+                                <span class="font-weight-bold">${notification.message}</span>
+                            </div>
+                        `;
+                        notificationList.appendChild(item);
+                    });
+                } else {
+                    notificationCount.style.display = "none";
+                    notificationList.innerHTML = '<p class="text-center p-3 text-gray-600">No new notifications</p>';
+                }
+            });
+    }
+
+    // Fetch notifications when page loads
+    fetchNotifications();
+
+    // Mark notifications as seen when dropdown is clicked
+    document.getElementById("notificationDropdown").addEventListener("click", function () {
+        fetch("mark_reservations_seen.php", { method: "POST" });
+        document.getElementById("notificationCount").style.display = "none";
+    });
+
+    // Auto-refresh notifications every 30 seconds
+    setInterval(fetchNotifications, 30000);
+});
 </script>
 </body>
 

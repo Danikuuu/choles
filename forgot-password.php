@@ -20,7 +20,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     // Verify reCAPTCHA response
-    $secretKey = "6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe"; // Test secret key
+    $secretKey = "6LdUMPUqAAAAAFZIGMIsx26RiIwZmCPKsBMBIPew";
     $verifyURL = "https://www.google.com/recaptcha/api/siteverify";
     $response = file_get_contents($verifyURL . "?secret=" . $secretKey . "&response=" . $recaptchaResponse);
     $responseData = json_decode($response);
@@ -166,7 +166,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <input type="email" name="email" class="form-control" id="email" placeholder="Enter your email" required>
                 </div>
                 <div class="mb-3 d-flex justify-content-center align-items-center">
-                            <div class="g-recaptcha" data-sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"></div>
+                            <div class="g-recaptcha" data-sitekey="6LdUMPUqAAAAALZHOSRgzVY2T5e-usP6Iv3kjoss"></div>
                         </div>
                 <button type="submit" class="btn btn-primary w-100">Send OTP</button>
 

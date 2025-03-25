@@ -1,13 +1,37 @@
 <?php
 session_start();
 
-if (!isset($_SESSION["user_id"]) || $_SESSION["role"] == 1 || $_SESSION["role"] == 0) {
+if (!isset($_SESSION["user_id"]) || $_SESSION["role"] == 1 || $_SESSION["role"] == 2) {
     header("Location: ../index.php");
     exit();
 }
 
 require_once '../data-handling/db/connection.php';
 
+$user_id = $_SESSION["user_id"];
+
+$limit = 5; // Records per page
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$page = max($page, 1); // Ensure page is at least 1
+$offset = ($page - 1) * $limit;
+
+// Count total records with status = 'pending' for pagination
+$count_query = "SELECT COUNT(*) AS total 
+                FROM customer_package_menu cpm
+                JOIN reservations r ON cpm.id = r.customer_package_id 
+                JOIN package p ON cpm.package_id = p.id
+                JOIN menu m ON cpm.menu_id = m.id
+                JOIN user c ON cpm.customer_id = c.id
+                WHERE c.id = ? AND r.status = 'completed'";
+
+$count_stmt = $con->prepare($count_query);
+$count_stmt->bind_param("i", $user_id);
+$count_stmt->execute();
+$count_result = $count_stmt->get_result();
+$total_records = $count_result->fetch_assoc()['total'];
+$total_pages = ceil($total_records / $limit);
+
+// Fetch paginated records where status = 'completed'
 $sql = "SELECT 
             r.id AS reservation_id,
             cpm.id AS customer_package_id,
@@ -16,6 +40,7 @@ $sql = "SELECT
             r.status,
             r.down_payment, 
             r.downpayment_price,
+            r.refund_img,
             p.package_name,
             p.package_price,
             p.people_count,
@@ -29,10 +54,14 @@ $sql = "SELECT
         JOIN package p ON cpm.package_id = p.id
         JOIN menu m ON cpm.menu_id = m.id
         JOIN user c ON cpm.customer_id = c.id
-        ORDER BY r.event_date DESC";
+        WHERE c.id = ? AND r.status = 'completed'
+        ORDER BY r.event_date DESC
+        LIMIT ? OFFSET ?";
 
-
-$result = $con->query($sql);
+$stmt = $con->prepare($sql);
+$stmt->bind_param("iii", $user_id, $limit, $offset);
+$stmt->execute();
+$result = $stmt->get_result();
 ?>
 
 
@@ -69,14 +98,14 @@ $result = $con->query($sql);
 
             <!-- Sidebar - Brand -->
             <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.php">
-                <div class="sidebar-brand-text mx-3">CHOLES <sup>Staff</sup></div>
+                <div class="sidebar-brand-text mx-3">CHOLES <sup>Catering</sup></div>
             </a>
 
             <!-- Divider -->
             <hr class="sidebar-divider my-0">
 
             <!-- Nav Item - Dashboard -->
-            <li class="nav-item">
+            <li class="nav-item active">
                 <a class="nav-link" href="index.php">
                     <i class="fas fa-fw fa-tachometer-alt"></i>
                     <span>Menu</span></a>
@@ -87,7 +116,7 @@ $result = $con->query($sql);
 
             <!-- Heading -->
             <div class="sidebar-heading">
-                Reservations    
+                Reservations
             </div>
 
             <!-- Nav Item - Pages Collapse Menu -->
@@ -95,6 +124,13 @@ $result = $con->query($sql);
                 <a class="nav-link" href="./reservation.php">
                     <i class="fas fa-fw fa-utensils"></i>
                     <span>Reservations</span></a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link" href="./messages.php">
+                    <i class="fas fa-envelope"></i> Messages
+                    <span id="unreadBadge" class="badge badge-danger" style="display: none;"></span>
+                </a>
             </li>
 
             <li class="nav-item active">
@@ -138,7 +174,24 @@ $result = $con->query($sql);
                     <!-- Topbar Navbar -->
                     <ul class="navbar-nav ml-auto">
 
-
+                    <li class="nav-item dropdown no-arrow mx-1">
+                            <a class="nav-link dropdown-toggle" href="#" id="notificationDropdown" role="button"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="fas fa-bell fa-fw"></i>
+                                <!-- Counter - Notifications -->
+                                <span class="badge badge-danger badge-counter" id="notificationCount">0</span>
+                            </a>
+                            <!-- Dropdown - Notifications -->
+                            <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                                aria-labelledby="notificationDropdown">
+                                <h6 class="dropdown-header">
+                                    Notifications
+                                </h6>
+                                <div id="notificationList">
+                                    <p class="text-center p-3 text-gray-600">No new notifications</p>
+                                </div>
+                            </div>
+                        </li>
                         <div class="topbar-divider d-none d-sm-block"></div>
 
                         <!-- Nav Item - User Information -->
@@ -171,6 +224,13 @@ $result = $con->query($sql);
                 <div class="container-fluid">
                 <div class="d-sm-flex align-items-center justify-content-between mb-4">
                         <h1 class="h3 mb-0 text-gray-800">Reservation History</h1>
+                        <div class="">
+                            <a class="mr-3 text-white btn btn-sm btn-warning" href="./pending_history.php">Pending</a>
+                            <a class="mr-3 text-white btn btn-sm btn-primary" href="./completed_history.php">Completed</a>
+                            <a class="mr-3 text-white btn btn-sm btn-success" href="./approved_history.php">Approved</a>
+                            <a class="mr-3 text-white btn btn-sm btn-danger" href="./cancelled_history.php">Cancelled</a>
+                            <a class="mr-3 text-white btn btn-sm btn-info" href="./refund_history.php">Refund</a>
+                        </div>
                     </div>
 
                     <div class=" p-3" style="z-index: 11">
@@ -209,52 +269,67 @@ $result = $con->query($sql);
                     </tr>
                 </thead>
                 <tbody>
-                <?php
-                    if ($result->num_rows > 0) {
-                        while ($row = $result->fetch_assoc()) {
-                            echo "<tr>";
-                            echo "<td>" . htmlspecialchars($row['customer_name']) . "</td>";
-                            echo "<td>" . htmlspecialchars($row['package_name']) . "</td>";
-                            echo "<td>" . htmlspecialchars($row['venue']) . "</td>";
-                            echo "<td>" . htmlspecialchars($row['people_count']) . "</td>";
-                            echo "<td>" . htmlspecialchars($row['event_date']) . "</td>";
-                            echo "<td>" . htmlspecialchars($row['package_price']) . "</td>";
-                            echo "<td>" . htmlspecialchars($row['downpayment_price']) . "</td>";
-                            echo "<td>" . htmlspecialchars($row['status']) . "</td>";
-                            echo "<td>
-                                    <button class='btn btn-success btn-sm view-btn'
-                                        data-customer='" . htmlspecialchars($row['customer_name']) . "'
-                                        data-id='" . htmlspecialchars($row['reservation_id']) . "'
-                                        data-package='" . htmlspecialchars($row['package_name']) . "'
-                                        data-venue='" . htmlspecialchars($row['venue']) . "'
-                                        data-event-date='" . htmlspecialchars($row['event_date']) . "'
-                                        data-price='" . htmlspecialchars($row['package_price']) . "'
-                                        data-downpayment_price='" . htmlspecialchars($row['downpayment_price']) . "'
-                                        data-status='" . htmlspecialchars($row['status']) . "'
-                                        data-downpayment='" . htmlspecialchars($row['down_payment']) . "'>
-                                        View
-                                    </button>";
-
-                            if ($row['status'] == 'pending') {
-                                echo "<form method='POST' action='update_status.php' style='display:inline;'>
-                                        <input type='hidden' name='reservationId' value='" . htmlspecialchars($row['reservation_id']) . "'>
-                                        <input type='hidden' name='status' value='cancelled'>
-                                        <button type='submit' class='btn btn-danger btn-sm'>Cancel</button>
-                                    </form>";
-                            } else {
-                                echo "<button class='btn btn-danger ml-1 btn-sm' disabled>Cancel</button>";
-                            }
-
-                            echo "</td>";
-                            echo "</tr>";
-                        }
-                    } else {
-                        echo "<tr><td colspan='8' class='text-center'>No records found</td></tr>";
-                    }
-                ?>
+                <?php if ($result->num_rows > 0): ?>
+            <?php while ($row = $result->fetch_assoc()): ?>
+                <tr>
+                    <td><?= htmlspecialchars($row['customer_name']) ?></td>
+                    <td><?= htmlspecialchars($row['package_name']) ?></td>
+                    <td><?= htmlspecialchars($row['venue']) ?></td>
+                    <td><?= htmlspecialchars($row['people_count']) ?></td>
+                    <td><?= htmlspecialchars($row['event_date']) ?></td>
+                    <td><?= htmlspecialchars($row['package_price']) ?></td>
+                    <td><?= htmlspecialchars($row['downpayment_price']) ?></td>
+                    <td><?= htmlspecialchars($row['status']) ?></td>
+                    <td>
+                        <button class="btn btn-success btn-sm view-btn"
+                            data-customer="<?= htmlspecialchars($row['customer_name']) ?>"
+                            data-id="<?= htmlspecialchars($row['reservation_id']) ?>"
+                            data-package="<?= htmlspecialchars($row['package_name']) ?>"
+                            data-venue="<?= htmlspecialchars($row['venue']) ?>"
+                            data-event-date="<?= htmlspecialchars($row['event_date']) ?>"
+                            data-price="<?= htmlspecialchars($row['package_price']) ?>"
+                            data-downpayment_price="<?= htmlspecialchars($row['downpayment_price']) ?>"
+                            data-status="<?= htmlspecialchars($row['status']) ?>"
+                            data-downpayment="<?= htmlspecialchars($row['down_payment']) ?>"
+                            data-refund-image="<?= htmlspecialchars($row['refund_img']) ?>">
+                            View
+                        </button>
+                        
+                        <?php if ($row['status'] == 'pending'): ?>
+                            <form method="POST" action="update_status.php" style="display:inline;">
+                                <input type="hidden" name="reservationId" value="<?= htmlspecialchars($row['reservation_id']) ?>">
+                                <input type="hidden" name="status" value="cancelled">
+                                <button type="submit" class="btn btn-danger btn-sm">Cancel</button>
+                            </form>
+                        <?php else: ?>
+                            <button class="btn btn-danger ml-1 btn-sm" disabled>Cancel</button>
+                        <?php endif; ?>
+                    </td>
+                </tr>
+            <?php endwhile; ?>
+        <?php else: ?>
+            <tr><td colspan="9" class="text-center">No records found</td></tr>
+        <?php endif; ?>
                 </tbody>
 
             </table>
+            <nav>
+            <ul class="pagination">
+                <?php if ($page > 1): ?>
+                    <li class="page-item"><a class="page-link" href="?page=<?= $page - 1 ?>">Previous</a></li>
+                <?php endif; ?>
+                
+                <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+                    <li class="page-item <?= ($i == $page) ? 'active' : '' ?>">
+                        <a class="page-link" href="?page=<?= $i ?>"><?= $i ?></a>
+                    </li>
+                <?php endfor; ?>
+
+                <?php if ($page < $total_pages): ?>
+                    <li class="page-item"><a class="page-link" href="?page=<?= $page + 1 ?>">Next</a></li>
+                <?php endif; ?>
+            </ul>
+        </nav>
             <div class="modal fade" id="viewModal" tabindex="-1" aria-labelledby="viewModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-lg">
                     <div class="modal-content">
@@ -297,6 +372,10 @@ $result = $con->query($sql);
                                 <tr id="downpaymentRow">
                                     <th>Downpayment Image</th>
                                     <td id="downpaymentContent"></td>
+                                </tr>
+                                <tr id="RefundRow">
+                                    <th>Refund Image</th>
+                                    <td id="modalRefund"></td>
                                 </tr>
                             </table>
                         </div>
@@ -387,6 +466,7 @@ $result = $con->query($sql);
                 let downpayment_price = $(this).data("downpayment_price");
                 let status = $(this).data("status");
                 let downpayment = $(this).data("downpayment");
+                let refund = $(this).data("refund-image");
 
                 // Set modal content
                 $("#modalCustomer").text(customer);
@@ -397,14 +477,21 @@ $result = $con->query($sql);
                 $("#modalPrice").text(price);
                 $("#modalStatus").text(status);
                 $("#modalDownpayment").text(downpayment_price);
+                $("#modalRefund").text(refund);
+
+                console.log(refund);
 
                 // Handle Downpayment Section
                 let downpaymentRow = $("#downpaymentRow");
+                let downpaymentRefund = $("#RefundRow");
+                let Refund = $("#modalRefund");
                 let downpaymentContent = $("#downpaymentContent");
                 console.log("Downpayment Image Path:", downpayment);
+                console.log("Refund Image Path:", refund);
 
 
                 if (status === "pending") {
+                    downpaymentRefund.hide();
                     downpaymentRow.show();
                     downpaymentContent.html(`
                     <img src="${downpayment}" alt="Downpayment Receipt" class="img-fluid" style="max-width: 300px;">
@@ -415,12 +502,34 @@ $result = $con->query($sql);
                         </form> <br>
                     `);
                 } else if (status === "approved" || status === "completed") {
+                    downpaymentRefund.hide();
                     downpaymentRow.show();
                     downpaymentContent.html(`
                         <img src="${downpayment}" alt="Downpayment Receipt" class="img-fluid" style="max-width: 300px;">
                     `);
                 } else if (status === "cancelled") {
-                    downpaymentRow.hide();
+                    downpaymentRow.show();
+                    downpaymentContent.html(`
+                        <img src="${downpayment}" alt="Downpayment Receipt" class="img-fluid" style="max-width: 300px;">
+                    `); 
+                    downpaymentRow.show();
+                    Refund.html(`
+                    <img src="${refund}" alt="Refund account" class="img-fluid" style="max-width: 300px;">
+                        <form action="./upload_refund.php" method="post" enctype="multipart/form-data">
+                            <input type="hidden" name="id" value="${reservationId}">
+                            <input type="file" name="refund" id="refund">
+                            <input type="submit" value="Submit" class="btn btn-sm btn-success">
+                        </form> <br>
+                    `);
+                } else if (status === "refunded") {
+                    downpaymentRow.show();
+                    downpaymentContent.html(`
+                        <img src="${downpayment}" alt="Downpayment Receipt" class="img-fluid" style="max-width: 300px;">
+                    `); 
+                    downpaymentRow.show();
+                    Refund.html(`
+                    <img src="${refund}" alt="Refund account" class="img-fluid" style="max-width: 300px;">
+                    `);
                 }
 
                 // Show modal
@@ -438,7 +547,58 @@ $result = $con->query($sql);
         }
     });
     </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+    function fetchNotifications() {
+        fetch("fetch_notifications.php") // Replace with your backend endpoint
+            .then(response => response.json())
+            .then(data => {
+                let count = data.length;
+                let notificationCount = document.getElementById("notificationCount");
+                let notificationList = document.getElementById("notificationList");
 
+                if (count > 0) {
+                    notificationCount.innerText = count;
+                    notificationCount.style.display = "inline-block";
+
+                    notificationList.innerHTML = "";
+                    data.forEach(notification => {
+                        let item = document.createElement("a");
+                        item.href = "#"; // Update with actual link
+                        item.classList.add("dropdown-item", "d-flex", "align-items-center");
+                        item.innerHTML = `
+                            <div class="mr-3">
+                                <div class="icon-circle bg-primary">
+                                    <i class="fas fa-info text-white"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="small text-gray-500">${notification.date}</div>
+                                <span class="font-weight-bold">${notification.message}</span>
+                            </div>
+                        `;
+                        notificationList.appendChild(item);
+                    });
+                } else {
+                    notificationCount.style.display = "none";
+                    notificationList.innerHTML = '<p class="text-center p-3 text-gray-600">No new notifications</p>';
+                }
+            });
+    }
+
+    // Fetch notifications when page loads
+    fetchNotifications();
+
+    // Mark notifications as seen when dropdown is clicked
+    document.getElementById("notificationDropdown").addEventListener("click", function () {
+        fetch("mark_reservations_seen.php", { method: "POST" });
+        document.getElementById("notificationCount").style.display = "none";
+    });
+
+    // Auto-refresh notifications every 30 seconds
+    setInterval(fetchNotifications, 30000);
+});
+    </script>
 
 </body>
 

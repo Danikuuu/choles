@@ -4,116 +4,110 @@ if (!isset($_SESSION["user_id"]) || $_SESSION["role"] == 0 || $_SESSION["role"] 
     header("Location: ../../index.php");
     exit();
 }
-// require_once('./vendor/tecnickcom/tcpdf/tcpdf.php'); 
+ 
 require_once('../../vendor/tecnickcom/tcpdf/tcpdf.php');
 require_once('../../data-handling/db/connection.php'); 
 
 $cateringName = "CHOLES Catering Services";
-
-// Get sales earnings for the current month
-$monthEarnings = "SELECT SUM(p.package_price) AS earnings_this_month
-                    FROM reservations r
-                    JOIN customer_package_menu cpm ON r.customer_package_id = cpm.id
-                    JOIN package p ON cpm.package_id = p.id
-                    WHERE r.status = 'completed'
-                    AND MONTH(r.event_date) = MONTH(CURRENT_DATE())
-                    AND YEAR(r.event_date) = YEAR(CURRENT_DATE());";
-$monthResult = $con->query($monthEarnings);
-$totalSales = ($monthResult->num_rows > 0) ? $monthResult->fetch_assoc()['earnings_this_month'] : 0;
-
-// Get sales earnings for the current year
-$yearEarnings = "SELECT SUM(p.package_price) AS earnings_this_year
-                 FROM reservations r
-                 JOIN customer_package_menu cpm ON r.customer_package_id = cpm.id
-                 JOIN package p ON cpm.package_id = p.id
-                 WHERE r.status = 'completed'
-                 AND YEAR(r.event_date) = YEAR(CURRENT_DATE());";
-$yearResult = $con->query($yearEarnings);
-$totalYearlySales = ($yearResult->num_rows > 0) ? $yearResult->fetch_assoc()['earnings_this_year'] : 0;
-
-// Get total reservations for the current month
-$reservationQuery = "SELECT COUNT(*) AS total_reservations 
-                     FROM reservations 
-                     WHERE YEAR(event_date) = YEAR(CURRENT_DATE()) 
-                     AND MONTH(event_date) = MONTH(CURRENT_DATE());";
-$reservationResult = $con->query($reservationQuery);
-$totalReservations = ($reservationResult->num_rows > 0) ? $reservationResult->fetch_assoc()['total_reservations'] : 0;
-
-// Get the top 3 most reserved packages
-$mostReservedPackageQuery = "SELECT p.package_name, COUNT(*) AS reservation_count 
-                        FROM customer_package_menu cpm
-                        JOIN package p ON cpm.package_id = p.id
-                        GROUP BY cpm.package_id
-                        ORDER BY reservation_count DESC
-                        LIMIT 3;";
-$mostReservedPackageResult = $con->query($mostReservedPackageQuery);
-$mostReservedPackages = [];
-while ($row = $mostReservedPackageResult->fetch_assoc()) {
-    $mostReservedPackages[] = $row['package_name'] . " (" . $row['reservation_count'] . ")";
-}
-$mostOrderedPackage = !empty($mostReservedPackages) ? implode(", ", $mostReservedPackages) : "No data";
-
-// Get the top 5 most chosen menu items
-$mostReservedMenuQuery = "SELECT m.name AS menu_name, COUNT(*) AS menu_count 
-                          FROM customer_package_menu cpm
-                          JOIN menu m ON cpm.menu_id = m.id
-                          GROUP BY cpm.menu_id
-                          ORDER BY menu_count DESC
-                          LIMIT 5;";
-$mostReservedMenuResult = $con->query($mostReservedMenuQuery);
-$mostReservedMenus = [];
-while ($row = $mostReservedMenuResult->fetch_assoc()) {
-    $mostReservedMenus[] = $row['menu_name'] . " (" . $row['menu_count'] . ")";
-}
-$mostOrderedMenu = !empty($mostReservedMenus) ? implode(", ", $mostReservedMenus) : "No data";
 
 // Create PDF
 $pdf = new TCPDF();
 $pdf->SetCreator(PDF_CREATOR);
 $pdf->SetAuthor('Catering Report');
 $pdf->SetTitle('Catering Sales Report');
-$pdf->SetHeaderData('', 0, 'Sales Report', "Generated on: " . date('Y-m-d'));
-$pdf->setHeaderFont(Array(PDF_FONT_NAME_MAIN, '', PDF_FONT_SIZE_MAIN));
-$pdf->setFooterFont(Array(PDF_FONT_NAME_DATA, '', PDF_FONT_SIZE_DATA));
-$pdf->SetMargins(10, 10, 10);
+$pdf->SetHeaderData('', 0, 'Catering Sales Report', "Generated on: " . date('Y-m-d'));
+$pdf->setHeaderFont([PDF_FONT_NAME_MAIN, '', PDF_FONT_SIZE_MAIN]);
+$pdf->setFooterFont([PDF_FONT_NAME_DATA, '', PDF_FONT_SIZE_DATA]);
+$pdf->SetMargins(15, 15, 15);
 $pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
-$pdf->SetFont('helvetica', '', 12);
+$pdf->SetFont('dejavusans', '', 12);
 $pdf->AddPage();
 
+// Fetch sales earnings for each month
+$monthlySalesQuery = "SELECT MONTH(event_date) AS month_num, MONTHNAME(event_date) AS month, 
+                      SUM(p.package_price) AS earnings 
+                      FROM reservations r
+                      JOIN customer_package_menu cpm ON r.customer_package_id = cpm.id
+                      JOIN package p ON cpm.package_id = p.id
+                      WHERE r.status = 'completed'
+                      AND YEAR(r.event_date) = YEAR(CURRENT_DATE())
+                      GROUP BY month_num, month
+                      ORDER BY month_num;";
 
+$monthlySalesResult = $con->query($monthlySalesQuery);
+
+// Initialize an array for all months with 0 sales by default
+$monthlySales = [
+    "January" => 0, "February" => 0, "March" => 0, "April" => 0, "May" => 0, "June" => 0,
+    "July" => 0, "August" => 0, "September" => 0, "October" => 0, "November" => 0, "December" => 0
+];
+
+// Fill the array with actual sales data
+while ($row = $monthlySalesResult->fetch_assoc()) {
+    $monthlySales[$row['month']] = $row['earnings'] ?? 0;
+}
+
+// Fetch most ordered menu items
+$mostOrderedMenuItemsQuery = "SELECT m.name AS menu_name, COUNT(*) AS menu_count 
+                               FROM customer_package_menu cpm
+                               JOIN menu m ON cpm.menu_id = m.id
+                               GROUP BY cpm.menu_id
+                               ORDER BY menu_count DESC
+                               LIMIT 5;";
+$mostOrderedMenuItemsResult = $con->query($mostOrderedMenuItemsQuery);
+$mostOrderedMenuItems = [];
+while ($row = $mostOrderedMenuItemsResult->fetch_assoc()) {
+    $mostOrderedMenuItems[$row['menu_name']] = $row['menu_count'];
+}
+
+// Fetch most ordered packages
+$mostOrderedPackagesQuery = "SELECT p.package_name, COUNT(*) AS reservation_count 
+                              FROM customer_package_menu cpm
+                              JOIN package p ON cpm.package_id = p.id
+                              GROUP BY cpm.package_id
+                              ORDER BY reservation_count DESC
+                              LIMIT 3;";
+$mostOrderedPackagesResult = $con->query($mostOrderedPackagesQuery);
+$mostOrderedPackages = [];
+while ($row = $mostOrderedPackagesResult->fetch_assoc()) {
+    $mostOrderedPackages[$row['package_name']] = $row['reservation_count'];
+}
+
+// Generate the HTML content
 $html = "
 <style>
-    body {
-        font-family: Arial, sans-serif;
-        margin: 20px;
-        padding: 20px;
-        background-color: #f8f9fa;
-    }
     .report-container {
-        background: #ffffff;
+        text-align: center;
         padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
     }
     h2 {
-        text-align: center;
         color: #2c3e50;
+        font-weight: bold;
         margin-bottom: 5px;
     }
     h3 {
-        text-align: center;
         color: #34495e;
-        margin-bottom: 15px;
-    }
-    hr {
-        border: 1px solid #ddd;
+        font-size: 18px;
         margin-bottom: 20px;
     }
-    p {
-        font-size: 16px;
-        color: #555;
-        line-height: 1.6;
+    .divider {
+        border-top: 2px solid #ddd;
+        margin: 15px 0;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
         margin: 10px 0;
+    }
+    th, td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: center;
+    }
+    th {
+        background-color: #2c3e50;
+        color: white;
+        font-weight: bold;
     }
     .highlight {
         font-weight: bold;
@@ -124,12 +118,54 @@ $html = "
 <div class='report-container'>
     <h2>$cateringName</h2>
     <h3>Monthly Sales Report</h3>
-    <hr>
-    <p><span class='highlight'>Sales this Month:</span> ₱$totalSales</p>
-    <p><span class='highlight'>Sales this Year:</span> ₱$totalYearlySales</p>
-    <p><span class='highlight'>Total Reservations this Month:</span> $totalReservations</p>
-    <p><span class='highlight'>Most Ordered Menu Items:</span> $mostOrderedMenu</p>
-    <p><span class='highlight'>Most Ordered Packages:</span> $mostOrderedPackage</p>
+    <div class='divider'></div>
+    
+    <table>
+        <tr>
+            <th>Month</th>
+            <th>Sales (₱)</th>
+        </tr>";
+
+foreach ($monthlySales as $month => $sales) {
+    $html .= "<tr>
+                <td>$month</td>
+                <td>₱" . number_format($sales, 2) . "</td>
+              </tr>";
+}
+
+$html .= "</table>
+
+    <h3>Most Reserved Menu Items</h3>
+    <table>
+        <tr>
+            <th>Menu Item</th>
+            <th>Orders</th>
+        </tr>";
+
+foreach ($mostOrderedMenuItems as $item => $orders) {
+    $html .= "<tr>
+                <td>$item</td>
+                <td>$orders</td>
+              </tr>";
+}
+
+$html .= "</table>
+
+    <h3>Most Reserved Packages</h3>
+    <table>
+        <tr>
+            <th>Package</th>
+            <th>Orders</th>
+        </tr>";
+
+foreach ($mostOrderedPackages as $package => $orders) {
+    $html .= "<tr>
+                <td>$package</td>
+                <td>$orders</td>
+              </tr>";
+}
+
+$html .= "</table>
 </div>
 ";
 
@@ -138,6 +174,7 @@ $pdf->writeHTML($html, true, false, true, false, '');
 
 // Output PDF
 $pdf->Output('catering_report.pdf', 'D'); // 'D' forces download
+
 
 exit;
 ?>

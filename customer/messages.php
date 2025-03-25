@@ -51,8 +51,8 @@ $user = $result->fetch_assoc();
         <!-- Sidebar -->
         <ul class="navbar-nav sidebar sidebar-dark accordion" id="accordionSidebar" style="background-color:  #059652;">
 
-            <!-- Sidebar - Brand -->
-            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.php">
+        <!-- Sidebar - Brand -->
+        <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.php">
                 <div class="sidebar-brand-text mx-3">CHOLES <sup>Catering</sup></div>
             </a>
 
@@ -125,7 +125,6 @@ $user = $result->fetch_assoc();
 
                     <!-- Topbar Navbar -->
                     <ul class="navbar-nav ml-auto">
-
                     <li class="nav-item dropdown no-arrow mx-1">
                             <a class="nav-link dropdown-toggle" href="#" id="notificationDropdown" role="button"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -144,14 +143,15 @@ $user = $result->fetch_assoc();
                                 </div>
                             </div>
                         </li>
+
                         <div class="topbar-divider d-none d-sm-block"></div>
 
                         <!-- Nav Item - User Information -->
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="mr-2 d-none d-lg-inline text-gray-600 small"><?php echo $_SESSION["fname"]," ", $_SESSION["lname"]; ?></span>
-                                    <img class="img-profile rounded-circle"
+                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">CHOLES Admin</span>
+                                <img class="img-profile rounded-circle"
                                     src="../admin/dashboard/img/undraw_profile.svg">
                             </a>
                             <!-- Dropdown - User Information -->
@@ -162,7 +162,7 @@ $user = $result->fetch_assoc();
                                     Profile
                                 </a>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="../destroy.php" data-toggle="modal" data-target="#logoutModal">
+                                <a class="dropdown-item" href="../../destroy.php" data-toggle="modal" data-target="#logoutModal">
                                     <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
                                     Logout
                                 </a>
@@ -174,8 +174,8 @@ $user = $result->fetch_assoc();
                 </nav>
                 <!-- End of Topbar -->
                 <div class="container-fluid">
-                <div class="d-sm-flex align-items-center justify-content-between mb-4">
-                        <h1 class="h3 mb-0 text-gray-800">Profile</h1>
+                <div class="d-sm-flex align-items-center justify-content-between">
+                        <h1 class="h3 mb-0 text-gray-800">Messanges</h1>
                     </div>
 
                     <div class="d-flex justify-content-center align-items-center">
@@ -198,78 +198,24 @@ $user = $result->fetch_assoc();
                             </div>
                         </div>
                     </div>
-
-                        <div class="row justify-content-center align-items-center p-5">
-                            <div class="col-md-8">
-                                <div class="card shadow-lg">
-                                    <div class="card-body">
-
-                                    <form action="./edit_profile.php" method="post" enctype="multipart/form-data">
-                                        <div class="text-center">
-                                            <p>Profile Data</p>
-                                        </div>
-
-                                        <div class="row">
-                                            <div class="col-md-6 mb-3">
-                                                <label class="form-label">First Name</label>
-                                                <input type="text" name="fname" class="form-control" value="<?php echo htmlspecialchars($user["fname"]); ?>" required>
-                                            </div>
-                                            <div class="col-md-6 mb-3">
-                                                <label class="form-label">Last Name</label>
-                                                <input type="text" name="lname" class="form-control" value="<?php echo htmlspecialchars($user["lname"]); ?>" required>
-                                            </div>
-                                        </div>
-
-                                        <div class="row">
-                                            <div class="col-md-6 mb-3">
-                                                <label class="form-label">Email</label>
-                                                <input type="email" name="email" class="form-control" value="<?php echo htmlspecialchars($user["email"]); ?>" readonly>
-                                            </div>
-                                            <div class="col-md-6 mb-3">
-                                                <label class="form-label">Mobile</label>
-                                                <input type="text" name="mobile" class="form-control" value="<?php echo htmlspecialchars($user["mobile"]); ?>" disabled required>
-                                            </div>
-                                        </div>
-
-                                        <div class="row">
-                                            <div class="col-md-6 mb-3">
-                                                <label class="form-label">New Password</label>
-                                                <input type="text" name="password" class="form-control" required>
-                                            </div>
-                                        </div>
-
-                                        <div class="row">
-                                            <div class="col-md-6 mb-3">
-                                                <label class="form-label">Province</label>
-                                                <input type="text" name="province" class="form-control" value="<?php echo htmlspecialchars($user["province"]); ?>" required>
-                                            </div>
-                                            <div class="col-md-6 mb-3">
-                                                <label class="form-label">City</label>
-                                                <input type="text" name="city" class="form-control" value="<?php echo htmlspecialchars($user["city"]); ?>" required>
-                                            </div>
-                                        </div>
-
-                                        <div class="row">
-                                            <div class="col-md-6 mb-3">
-                                                <label class="form-label">Barangay</label>
-                                                <input type="text" name="barangay" class="form-control" value="<?php echo htmlspecialchars($user["barangay"]); ?>" required>
-                                            </div>
-                                            <div class="col-md-6 mb-3">
-                                                <label class="form-label">Street</label>
-                                                <input type="text" name="street" class="form-control" value="<?php echo htmlspecialchars($user["street"]); ?>" required>
-                                            </div>
-                                        </div>
-
-                                        <div class="text-center">
-                                            <button type="submit" class="btn btn-success">Save Changes</button>
-                                            <a href="index.php" class="btn btn-secondary">Cancel</a>
-                                        </div>
-                                    </form>
-                                        
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="container-fluid">
+    <div class="row">
+        <div class="col-md-4">
+            <h4>Inbox</h4>
+            <ul id="messageList" class="list-group">
+                <!-- Messages will be displayed here -->
+            </ul>
+        </div>
+        <div class="col-md-8">
+            <div id="chatBox" style="height: 400px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px;">
+                <!-- Chat messages will load here -->
+            </div>
+            <input type="hidden" id="receiverId" value="1">
+            <textarea id="messageInput" class="form-control" placeholder="Type your message..."></textarea>
+            <button id="sendMessage" class="btn btn-primary mt-2">Send</button>
+        </div>
+    </div>
+</div>
 
                 </div>
                 <!-- /.container-fluid -->
@@ -348,7 +294,248 @@ $user = $result->fetch_assoc();
         }
     });
     </script>
-        <script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $("#sidebarToggleTop").click(function () {
+            $(".sidebar").toggleClass("d-none d-md-block"); // Toggle sidebar visibility
+        });
+    });
+</script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function() {
+    let receiverId = null;
+
+    function fetchMessages() {
+    let chatBox = $("#chatBox");
+    let receiverId = $("#receiverId").val(); // Get receiver ID dynamically
+
+    if (!receiverId) return;
+
+    $.ajax({
+    url: "fetch_messages.php",
+    type: "GET",
+    data: { receiver_id: receiverId },
+    dataType: "json",
+    success: function(messages) {
+        console.log("Messages fetched:", messages); // Debugging
+
+        let chatBox = $("#chatBox");
+        chatBox.html("");
+
+        if (!Array.isArray(messages) || messages.length === 0) {
+            chatBox.append(`
+                <div class="text-center mt-3">
+                    <p>No messages yet.</p>
+                    <button id="startNewChat" class="btn btn-primary">+ Start New Chat</button>
+                </div>
+            `);
+
+            $("#startNewChat").click(function () {
+                showUserListModal();
+            });
+
+            return;
+        }
+
+        messages.forEach(msg => {
+                    let msgClass = msg.sender_id == "<?php echo $_SESSION['user_id']; ?>" ? "text-right text-primary" : "text-left text-dark";
+                    chatBox.append(`<p class="${msgClass}"><strong>${msg.fname}:</strong> ${msg.message}</p>`);
+                });
+
+                chatBox.scrollTop(chatBox[0].scrollHeight);
+    },
+    error: function(xhr, status, error) {
+        console.error("Error fetching messages:", error);
+    }
+});
+
+}
+
+function showUserListModal() {
+    $.ajax({
+        url: "fetch_users.php",
+        type: "GET",
+        dataType: "json",
+        success: function(response) {
+            if (response.error) {
+                console.error("Server Error:", response.error);
+                alert("Error: " + response.error);
+                return;
+            }
+
+            if (!Array.isArray(response)) {
+                console.error("Unexpected response:", response);
+                alert("Error fetching users");
+                return;
+            }
+
+            let modalContent = `
+                <div class="modal fade" id="userListModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Select a User</h5>
+                                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                            </div>
+                            <div class="modal-body">
+                                <ul class="list-group">
+            `;
+
+            response.forEach(user => {
+                modalContent += `
+                    <li class="list-group-item user-item" data-user-id="${user.id}">
+                        ${user.fname}
+                    </li>
+                `;
+            });
+
+            modalContent += `
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            $("body").append(modalContent);
+            $("#userListModal").modal("show");
+
+            $(".user-item").click(function () {
+                let selectedUserId = $(this).data("user-id");
+                $("#receiverId").val(selectedUserId);
+                $("#userListModal").modal("hide");
+                fetchMessages(); // Load chat with selected user
+            });
+        },
+        error: function(xhr, status, error) {
+            console.error("AJAX Error:", error);
+            alert("Failed to load users: " + error);
+        }
+    });
+}
+
+    function fetchInbox() {
+    let messageList = $("#messageList");
+
+    // Show a loading state before the request
+    messageList.html('<li class="list-group-item text-center"><i class="fas fa-spinner fa-spin"></i> Loading messages...</li>');
+
+    $.ajax({
+        url: "fetch_inbox.php",
+        type: "GET",
+        dataType: "json",
+        success: function(response) {
+            messageList.html("");
+
+            if (!Array.isArray(response)) {
+                console.error("Unexpected response:", response);
+                messageList.append('<li class="list-group-item text-danger text-center"><i class="fas fa-exclamation-circle"></i> Error fetching messages</li>');
+                return;
+            }
+
+            if (response.length === 0) {
+                messageList.append('<li class="list-group-item text-center text-muted"><i class="fas fa-envelope-open-text"></i> No messages yet</li>');
+            } else {
+                response.forEach(user => {
+                    let unreadBadge = user.unread_count > 0 
+                        ? `<span class="badge badge-danger float-right">${user.unread_count}</span>` 
+                        : "";
+
+                    messageList.append(`
+                        <li class="list-group-item user-item d-flex align-items-center justify-content-between" 
+                            data-receiver-id="${user.sender_id}" 
+                            style="cursor: pointer;">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-user-circle text-primary mr-2" style="font-size: 1.5rem;"></i>
+                                <strong>${user.fname}</strong>
+                            </div>
+                            ${unreadBadge}
+                        </li>
+                    `);
+                });
+
+                // Add click event for user-item
+                $(".user-item").click(function () {
+                    let receiverId = $(this).data("receiver-id");
+                    $("#receiverId").val(receiverId); // Update the hidden input field
+                    console.log("Receiver ID set to:", receiverId);
+                });
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error("AJAX Error:", error);
+            messageList.html('<li class="list-group-item text-danger text-center"><i class="fas fa-exclamation-circle"></i> Failed to load messages</li>');
+        }
+    });
+}
+
+
+
+
+    $("#messageList").on("click", ".user-item", function() {
+        receiverId = $(this).data("receiver-id");
+        $("#receiverId").val(receiverId);
+        fetchMessages();
+    });
+
+    $("#sendMessage").click(function () {
+    let message = $("#messageInput").val().trim();
+    let receiverId = $("#receiverId").val(); // Get receiver ID from hidden input
+
+    if (message !== "" && receiverId) {
+        $.ajax({
+            url: "send_message.php",
+            type: "POST",
+            data: { receiver_id: receiverId, message: message },
+            dataType: "json",
+            success: function (response) {
+                if (response.status === "success") {
+                    $("#messageInput").val(""); // Clear the input field
+                    fetchMessages(); // Reload messages
+                    fetchInbox(); // Reload inbox
+                } else if (response.status === "error") {
+                    alert("Error sending message.");
+                    console.error("Message send error:", response.error);
+                } else if (response.status === "empty") {
+                    alert("Message cannot be empty.");
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error("AJAX Error:", error);
+            }
+        });
+    } else {
+        alert("Select a user to send a message.");
+    }
+});
+
+
+    fetchInbox();
+    setInterval(fetchMessages, 2000);
+    setInterval(fetchInbox, 5000);
+});
+</script>
+<script>
+function fetchUnreadCount() {
+    $.ajax({
+        url: "fetch_unread.php",
+        type: "GET",
+        dataType: "json",
+        success: function(response) {
+            if (response.unread_count > 0) {
+                $("#unreadBadge").text(response.unread_count).show();
+            } else {
+                $("#unreadBadge").hide();
+            }
+        }
+    });
+}
+
+setInterval(fetchUnreadCount, 5000); // Check for new messages every 5 seconds
+</script>
+<script>
         document.addEventListener("DOMContentLoaded", function () {
     function fetchNotifications() {
         fetch("fetch_notifications.php") // Replace with your backend endpoint
@@ -400,6 +587,11 @@ $user = $result->fetch_assoc();
     setInterval(fetchNotifications, 30000);
 });
     </script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Bootstrap (CSS and JS) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>

@@ -167,6 +167,91 @@ while ($row = $mostSoldMenuResult->fetch_assoc()) {
 }
 $response["mostSoldMenus"] = $mostSoldMenus;
 
+// Monthly Earnings (Filtered)
+$monthEarningsQuery = "SELECT SUM(p.package_price) AS earnings_this_month
+                        FROM reservations r
+                        JOIN customer_package_menu cpm ON r.customer_package_id = cpm.id
+                        JOIN package p ON cpm.package_id = p.id
+                        WHERE r.status = 'completed'
+                        AND MONTH(r.event_date) = ?
+                        AND YEAR(r.event_date) = ?";
+
+$stmt = $con->prepare($monthEarningsQuery);
+$stmt->bind_param("ii", $selectedMonth, $selectedYear);
+$stmt->execute();
+$monthResult = $stmt->get_result();
+
+$monthEarnings = 0;
+if ($monthResult) {
+    $row = $monthResult->fetch_assoc();
+    $monthEarnings = $row['earnings_this_month'] ?? 0;
+}
+$response["monthEarnings"] = $monthEarnings;
+
+// Yearly Earnings (Filtered)
+$yearEarningsQuery = "SELECT SUM(p.package_price) AS earnings_this_year
+                        FROM reservations r
+                        JOIN customer_package_menu cpm ON r.customer_package_id = cpm.id
+                        JOIN package p ON cpm.package_id = p.id
+                        WHERE r.status = 'completed'
+                        AND YEAR(r.event_date) = ?";
+
+$stmt = $con->prepare($yearEarningsQuery);
+$stmt->bind_param("i", $selectedYear);
+$stmt->execute();
+$yearResult = $stmt->get_result();
+
+$yearEarnings = 0;
+if ($yearResult) {
+    $row = $yearResult->fetch_assoc();
+    $yearEarnings = $row['earnings_this_year'] ?? 0;
+}
+$response["yearEarnings"] = $yearEarnings;
+
+// Total Reservations (Filtered)
+$reservationQuery = "SELECT COUNT(*) AS total_reservations 
+                     FROM reservations
+                     WHERE YEAR(event_date) = ?
+                     " . ($filter === 'month' ? "AND MONTH(event_date) = ?" : "");
+
+$stmt = $con->prepare($reservationQuery);
+if ($filter === 'month') {
+    $stmt->bind_param("ii", $selectedYear, $selectedMonth);
+} else {
+    $stmt->bind_param("i", $selectedYear);
+}
+$stmt->execute();
+$reservationResult = $stmt->get_result();
+
+$numberOfReservations = 0;
+if ($reservationResult) {
+    $row = $reservationResult->fetch_assoc();
+    $numberOfReservations = $row['total_reservations'] ?? 0;
+}
+$response["numberOfReservations"] = $numberOfReservations;
+
+// Pending Reservations (Filtered)
+$pendingReservationQuery = "SELECT COUNT(*) AS total_pending_reservations 
+                            FROM reservations 
+                            WHERE status = 'pending' 
+                            AND YEAR(event_date) = ? 
+                            " . ($filter === 'month' ? "AND MONTH(event_date) = ?" : "");
+
+$stmt = $con->prepare($pendingReservationQuery);
+if ($filter === 'month') {
+    $stmt->bind_param("ii", $selectedYear, $selectedMonth);
+} else {
+    $stmt->bind_param("i", $selectedYear);
+}
+$stmt->execute();
+$pendingResult = $stmt->get_result();
+
+$totalPendingReservations = 0; 
+if ($pendingResult) {
+    $row = $pendingResult->fetch_assoc();
+    $totalPendingReservations = $row['total_pending_reservations'] ?? 0; 
+}
+$response["totalPendingReservations"] = $totalPendingReservations;
 
 echo json_encode($response);
 ?>

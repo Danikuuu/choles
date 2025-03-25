@@ -14,7 +14,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   if (!isset($_POST['g-recaptcha-response']) || empty($_POST['g-recaptcha-response'])) {
       $error = "Please complete the reCAPTCHA verification.";
   } else {
-      $recaptcha_secret = "6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe";
+      $recaptcha_secret = "6LdUMPUqAAAAAFZIGMIsx26RiIwZmCPKsBMBIPew";
       $recaptcha_response = $_POST['g-recaptcha-response'];
 
       // Verify reCAPTCHA
@@ -235,11 +235,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
               </div>
 
               <div class="mb-3 d-flex justify-content-center ialign-items-center">
-                  <div class="g-recaptcha" data-sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"></div>
+                  <div class="g-recaptcha" data-sitekey="6LdUMPUqAAAAALZHOSRgzVY2T5e-usP6Iv3kjoss"></div>
               </div>
 
               <button type="submit" class="btn btn-primary w-100">Sign Up</button>
-              <p class="text-center mt-3">Already have an account? <a href="login.html">Login</a></p>
+              <p class="text-center mt-3">Already have an account? <a href="login.php">Login</a></p>
             </form>
           </div>
         </div>
@@ -323,54 +323,47 @@ let cities = [];
 let barangays = [];
 
 $(document).ready(function() {
+    // Default values
+    let defaultProvinceCode = "0349";
+    let defaultProvinceName = "Nueva Ecija";
+    let defaultCityCode = "034903";
+    let defaultCityName = "Cabanatuan City";
+
+    // Disable Province and City Selects
+    $("#province").prop("disabled", true);
+    $("#city").prop("disabled", true);
+
     // Load Province Data
     $.getJSON("province.json", function(data) {
         provinces = data;
         $.each(provinces, function(index, province) {
             $("#province").append(`<option value="${province.province_code}">${province.province_name}</option>`);
         });
+
+        // Set default province
+        $("#province").val(defaultProvinceCode);
+        $("#province_name").val(defaultProvinceName);
     });
 
     // Load City Data
     $.getJSON("city.json", function(data) {
         cities = data;
+        $.each(cities, function(index, city) {
+            $("#city").append(`<option value="${city.city_code}">${city.city_name}</option>`);
+        });
+
+        // Set default city
+        $("#city").val(defaultCityCode);
+        $("#city_name").val(defaultCityName);
     });
 
-    // Load Barangay Data
+    // Load Barangay Data and Display All Barangays of Cabanatuan City
     $.getJSON("barangay.json", function(data) {
         barangays = data;
-    });
-
-    // Province Change Event
-    $("#province").change(function() {
-        let selectedProvinceCode = $(this).val();
-        let selectedProvince = provinces.find(province => province.province_code === selectedProvinceCode);
-
-        $("#city").html('<option value="">Select City</option>');
         $("#barangay").html('<option value="">Select Barangay</option>');
-
-        // Store province name in the hidden input
-        $("#province_name").val(selectedProvince ? selectedProvince.province_name : "");
-
-        $.each(cities, function(index, city) {
-            if (city.province_code === selectedProvinceCode) {
-                $("#city").append(`<option value="${city.city_code}">${city.city_name}</option>`);
-            }
-        });
-    });
-
-    // City Change Event
-    $("#city").change(function() {
-        let selectedCityCode = $(this).val();
-        let selectedCity = cities.find(city => city.city_code === selectedCityCode);
-
-        $("#barangay").html('<option value="">Select Barangay</option>');
-
-        // Store city name in the hidden input
-        $("#city_name").val(selectedCity ? selectedCity.city_name : "");
 
         $.each(barangays, function(index, barangay) {
-            if (barangay.city_code === selectedCityCode) {
+            if (barangay.city_code === defaultCityCode) {
                 $("#barangay").append(`<option value="${barangay.brgy_code}">${barangay.brgy_name}</option>`);
             }
         });
@@ -385,6 +378,7 @@ $(document).ready(function() {
         $("#barangay_name").val(selectedBarangay ? selectedBarangay.brgy_name : "");
     });
 });
+
 
 </script>
 

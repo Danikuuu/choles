@@ -23,6 +23,16 @@ while ($row = $dateResult->fetch_assoc()) {
     $reservedDates[] = $row['event_date'];
 }
 
+$coupon = "SELECT code, discount_value FROM coupons WHERE status = 'active' AND expiry_date >= CURDATE() ORDER BY expiry_date ASC LIMIT 1";
+$couponResult = $con->query($coupon);
+
+$couponCode = "";
+
+if ($couponResult->num_rows > 0) {
+    $row = $couponResult->fetch_assoc();
+    $couponCode = $row['code']; // Get the coupon code
+    $couponValue = $row['discount_value'];
+}
 ?>
 
 
@@ -58,10 +68,7 @@ while ($row = $dateResult->fetch_assoc()) {
         <ul class="navbar-nav sidebar sidebar-dark accordion" id="accordionSidebar" style="background-color:  #059652;">
 
             <!-- Sidebar - Brand -->
-            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.html">
-                <div class="sidebar-brand-icon rotate-n-15">
-                    <i class="fas fa-laugh-wink"></i>
-                </div>
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.php">
                 <div class="sidebar-brand-text mx-3">CHOLES <sup>Catering</sup></div>
             </a>
 
@@ -286,6 +293,15 @@ while ($row = $dateResult->fetch_assoc()) {
                                     </div>
 
                                     <div class="form-group">
+                                        <label for="end_time">Coupon</label>
+                                        
+                                        <input type="text" class="form-control" id="coupon" name="coupon" placeholder="Type you coupon code here">
+                                        <label for="coupon">Available Coupon : <?php echo htmlspecialchars($couponCode); ?></label> <br>
+                                        <label for="coupon">Value : ₱ <?php echo htmlspecialchars($couponValue); ?></label>
+                                        <p class=""><strong>Note : Coupon is one time use only</strong></p>
+                                    </div>
+
+                                    <div class="form-group">
                                         <label for="menu_selection">Select Menus (<span id="menu_limit"></span> items)</label> <br>
                                         <?php if ($menuResult->num_rows > 0): ?>
                                             <?php while ($row = $menuResult->fetch_assoc()): ?>
@@ -459,12 +475,12 @@ while ($row = $dateResult->fetch_assoc()) {
         let reservedDates = <?php echo json_encode($reservedDates); ?>;
 
         // Disable reserved dates
-        // eventDateInput.addEventListener("input", function () {
-        //     if (reservedDates.includes(this.value)) {
-        //         alert("This date is already reserved. Please select another date.");
-        //         this.value = ""; // Clear selected date
-        //     }
-        // });
+        eventDateInput.addEventListener("input", function () {
+            if (reservedDates.includes(this.value)) {
+                alert("This date is already reserved. Please select another date.");
+                this.value = ""; // Clear selected date
+            }
+        });
     });
 </script>
 

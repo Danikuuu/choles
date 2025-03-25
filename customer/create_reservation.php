@@ -15,37 +15,71 @@ require '../vendor/autoload.php';
 require '../data-handling/db/connection.php';
 
 if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_SESSION["user_id"]) && isset($_SESSION["role"]) && $_SESSION["role"] == 0) {
-    $customer_id = $_SESSION["user_id"];  
-    $customer_email = $_SESSION["email"]; 
+    $customer_id = $_SESSION["user_id"];
+    $customer_email = $_SESSION["email"];
     $customer_fname = $_SESSION["fname"];
-    $customer_lname = $_SESSION["lname"];  
+    $customer_lname = $_SESSION["lname"];
     $package_id = $_POST['package_id'] ?? null;
     $event_date = $_POST['event_date'] ?? null;
     $menu_ids = $_POST['menu_id'] ?? [];
-    $event_type = $_POST["event_type"];  
-    $event_theme = $_POST["event_theme"];  
+    $event_type = $_POST["event_type"];
+    $event_theme = $_POST["event_theme"];
     $start_time = date("H:i:s", strtotime($_POST["start_time"]));
     $end_time = date("H:i:s", strtotime($_POST["end_time"]));
-
+    $coupon_code = isset($_POST["coupon"]) ? trim($_POST["coupon"]) : null;
+    $coupon_id = null;
 
     if (!$customer_id || !$package_id || !$event_date || empty($menu_ids) || !$event_type || !$event_theme || !$start_time || !$end_time) {
         $_SESSION['error'] = "All fields are required.";
         header("Location: package.php");
         exit;
     }
-    
-    
+
     try {
-        // Fetch downpayment price from the package table
+        // Fetch package price
         $stmt = $con->prepare("SELECT downpayment FROM package WHERE id = ?");
         $stmt->bind_param("i", $package_id);
         $stmt->execute();
         $result = $stmt->get_result();
         $row = $result->fetch_assoc();
-        $downpayment_price = $row['downpayment'];
+        $package_price = $row['downpayment'];
         $stmt->close();
 
-        // Insert into customer_package_menu
+        // Apply coupon discount if valid
+        if (!empty($coupon_code)) {
+            $stmt = $con->prepare("SELECT id, discount_type, discount_value, status FROM coupons WHERE code = ? AND expiry_date >= CURDATE()");
+            $stmt->bind_param("s", $coupon_code);
+            $stmt->execute();
+            $coupon_result = $stmt->get_result();
+    
+            if ($coupon_result->num_rows > 0) {
+                $coupon = $coupon_result->fetch_assoc();
+                
+                if ($coupon['status'] === 'used') {
+                    $_SESSION['error'] = "This coupon has already been used.";
+                    header("Location: package.php");
+                    exit;
+                }
+    
+                $discount_type = $coupon['discount_type'];
+                $discount_value = $coupon['discount_value'];
+                $coupon_id = $coupon['id'];
+    
+                if ($discount_type == 'percentage') {
+                    $discount_amount = ($package_price * $discount_value) / 100;
+                } else {
+                    $discount_amount = $discount_value;
+                }
+    
+                $final_price = max(0, $package_price - $discount_amount);
+            } else {
+                $_SESSION['error'] = "Invalid or expired coupon.";
+                header("Location: package.php");
+                exit;
+            }
+            $stmt->close();
+        }
+
         // Insert into `customer_package_menu`
         $stmt = $con->prepare("INSERT INTO customer_package_menu (customer_id, package_id, menu_id, created_at) VALUES (?, ?, ?, NOW())");
         if (!$stmt) {
@@ -59,7 +93,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_SESSION["user_id"]) && isse
             }
         }
 
-        $customer_package_id = $stmt->insert_id; // Get the last inserted ID
+        $customer_package_id = $stmt->insert_id;
         $stmt->close();
 
         // Insert into `reservations`
@@ -73,19 +107,37 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_SESSION["user_id"]) && isse
             die("Prepare failed (reservations): " . $con->error);
         }
 
-        // Bind parameters
         $stmt->bind_param("issssss", 
-            $customer_package_id, $event_date, $downpayment_price, 
+            $customer_package_id, $event_date, $final_price, 
             $event_type, $event_theme, $start_time, $end_time
         );
 
-        // Execute and check for errors
         if (!$stmt->execute()) {
             die("Execution failed (reservations): " . $stmt->error);
         }
 
-        // Close statement
         $stmt->close();
+
+        if (!empty($coupon_id)) {
+            $stmt = $con->prepare("SELECT id FROM used_coupons WHERE customer_id = ? AND coupon_id = ?");
+            $stmt->bind_param("ii", $customer_id, $coupon_id);
+            $stmt->execute();
+            $used_result = $stmt->get_result();
+        
+            if ($used_result->num_rows == 0) {
+                $stmt = $con->prepare("INSERT INTO used_coupons (customer_id, coupon_id, used_at) VALUES (?, ?, NOW())");
+                $stmt->bind_param("ii", $customer_id, $coupon_id);
+                if (!$stmt->execute()) {
+                    die("Execution failed (used_coupons): " . $stmt->error);
+                }
+                echo "Coupon successfully saved to used_coupons!";
+            } else {
+                echo "Coupon already used!";
+            }
+            $stmt->close();
+        } else {
+            echo "Coupon ID is missing!";
+        }
 
         $mail = new PHPMailer(true);
         try {

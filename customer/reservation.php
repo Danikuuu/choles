@@ -43,10 +43,7 @@ require_once '../data-handling/db/connection.php';
         <ul class="navbar-nav sidebar sidebar-dark accordion" id="accordionSidebar" style="background-color:  #059652;">
 
             <!-- Sidebar - Brand -->
-            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.html">
-                <div class="sidebar-brand-icon rotate-n-15">
-                    <i class="fas fa-laugh-wink"></i>
-                </div>
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.php">
                 <div class="sidebar-brand-text mx-3">CHOLES <sup>Catering</sup></div>
             </a>
 
@@ -54,7 +51,7 @@ require_once '../data-handling/db/connection.php';
             <hr class="sidebar-divider my-0">
 
             <!-- Nav Item - Dashboard -->
-            <li class="nav-item">
+            <li class="nav-item active">
                 <a class="nav-link" href="index.php">
                     <i class="fas fa-fw fa-tachometer-alt"></i>
                     <span>Menu</span></a>
@@ -73,6 +70,13 @@ require_once '../data-handling/db/connection.php';
                 <a class="nav-link" href="./reservation.php">
                     <i class="fas fa-fw fa-utensils"></i>
                     <span>Reservations</span></a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link" href="./messages.php">
+                    <i class="fas fa-envelope"></i> Messages
+                    <span id="unreadBadge" class="badge badge-danger" style="display: none;"></span>
+                </a>
             </li>
 
             <li class="nav-item">
@@ -113,7 +117,24 @@ require_once '../data-handling/db/connection.php';
                     <!-- Topbar Navbar -->
                     <ul class="navbar-nav ml-auto">
 
-
+                    <li class="nav-item dropdown no-arrow mx-1">
+                            <a class="nav-link dropdown-toggle" href="#" id="notificationDropdown" role="button"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="fas fa-bell fa-fw"></i>
+                                <!-- Counter - Notifications -->
+                                <span class="badge badge-danger badge-counter" id="notificationCount">0</span>
+                            </a>
+                            <!-- Dropdown - Notifications -->
+                            <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                                aria-labelledby="notificationDropdown">
+                                <h6 class="dropdown-header">
+                                    Notifications
+                                </h6>
+                                <div id="notificationList">
+                                    <p class="text-center p-3 text-gray-600">No new notifications</p>
+                                </div>
+                            </div>
+                        </li>
                         <div class="topbar-divider d-none d-sm-block"></div>
 
                         <!-- Nav Item - User Information -->
@@ -280,7 +301,58 @@ require_once '../data-handling/db/connection.php';
     <script src="../admin//dashboard/js/demo/chart-pie-demo.js"></script>
     <script src="../admin//dashboard/js/demo/chart-bar-demo.js"></script>
     <script src="../admin//dashboard/js/demo/datatables-demo.js"></script>  
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+    function fetchNotifications() {
+        fetch("fetch_notifications.php") // Replace with your backend endpoint
+            .then(response => response.json())
+            .then(data => {
+                let count = data.length;
+                let notificationCount = document.getElementById("notificationCount");
+                let notificationList = document.getElementById("notificationList");
 
+                if (count > 0) {
+                    notificationCount.innerText = count;
+                    notificationCount.style.display = "inline-block";
+
+                    notificationList.innerHTML = "";
+                    data.forEach(notification => {
+                        let item = document.createElement("a");
+                        item.href = "#"; // Update with actual link
+                        item.classList.add("dropdown-item", "d-flex", "align-items-center");
+                        item.innerHTML = `
+                            <div class="mr-3">
+                                <div class="icon-circle bg-primary">
+                                    <i class="fas fa-info text-white"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="small text-gray-500">${notification.date}</div>
+                                <span class="font-weight-bold">${notification.message}</span>
+                            </div>
+                        `;
+                        notificationList.appendChild(item);
+                    });
+                } else {
+                    notificationCount.style.display = "none";
+                    notificationList.innerHTML = '<p class="text-center p-3 text-gray-600">No new notifications</p>';
+                }
+            });
+    }
+
+    // Fetch notifications when page loads
+    fetchNotifications();
+
+    // Mark notifications as seen when dropdown is clicked
+    document.getElementById("notificationDropdown").addEventListener("click", function () {
+        fetch("mark_reservations_seen.php", { method: "POST" });
+        document.getElementById("notificationCount").style.display = "none";
+    });
+
+    // Auto-refresh notifications every 30 seconds
+    setInterval(fetchNotifications, 30000);
+});
+    </script>
 </body>
 
 </html>

@@ -48,10 +48,7 @@ $category_result = $con->query($category);
         <ul class="navbar-nav sidebar sidebar-dark accordion" id="accordionSidebar" style="background-color:  #059652;">
 
             <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.php">
-                <div class="sidebar-brand-icon rotate-n-15">
-                    <i class="fas fa-laugh-wink"></i>
-                </div>
-                <div class="sidebar-brand-text mx-3">CHOLES <sup>Admin</sup></div>
+                <div class="sidebar-brand-text mx-3">CHOLES <sup>Staff</sup></div>
             </a>
 
             <hr class="sidebar-divider my-0">
