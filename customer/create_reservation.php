@@ -47,38 +47,62 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_SESSION["user_id"]) && isse
 
         // Apply coupon discount if valid
         if (!empty($coupon_code)) {
+            // Get coupon details
             $stmt = $con->prepare("SELECT id, discount_type, discount_value, status FROM coupons WHERE code = ? AND expiry_date >= CURDATE()");
             $stmt->bind_param("s", $coupon_code);
             $stmt->execute();
             $coupon_result = $stmt->get_result();
-    
+        
             if ($coupon_result->num_rows > 0) {
                 $coupon = $coupon_result->fetch_assoc();
-                
-                if ($coupon['status'] === 'used') {
-                    $_SESSION['error'] = "This coupon has already been used.";
+                $coupon_id = $coupon['id'];
+        
+                // Check if the coupon has already been used by this customer
+                $stmt = $con->prepare("SELECT id FROM used_coupons WHERE customer_id = ? AND coupon_id = ?");
+                $stmt->bind_param("ii", $customer_id, $coupon_id);
+                $stmt->execute();
+                $used_result = $stmt->get_result();
+        
+                if ($used_result->num_rows > 0) {
+                    $_SESSION['error'] = "Coupon already used!";
                     header("Location: package.php");
                     exit;
                 }
-    
+        
+                // Insert into used_coupons table
+                $stmt = $con->prepare("INSERT INTO used_coupons (customer_id, coupon_id, used_at) VALUES (?, ?, NOW())");
+                $stmt->bind_param("ii", $customer_id, $coupon_id);
+                if (!$stmt->execute()) {
+                    die("Execution failed (used_coupons): " . $stmt->error);
+                }
+        
+                // Validate if coupon is already marked as used
+                if ($coupon['status'] === 'expired') {
+                    $_SESSION['error'] = "This coupon is expired.";
+                    header("Location: package.php");
+                    exit;
+                }
+        
+                // Apply the discount
                 $discount_type = $coupon['discount_type'];
                 $discount_value = $coupon['discount_value'];
-                $coupon_id = $coupon['id'];
-    
+        
                 if ($discount_type == 'percentage') {
                     $discount_amount = ($package_price * $discount_value) / 100;
                 } else {
                     $discount_amount = $discount_value;
                 }
-    
+        
                 $final_price = max(0, $package_price - $discount_amount);
             } else {
                 $_SESSION['error'] = "Invalid or expired coupon.";
                 header("Location: package.php");
                 exit;
             }
+        
             $stmt->close();
         }
+        
 
         // Insert into `customer_package_menu`
         $stmt = $con->prepare("INSERT INTO customer_package_menu (customer_id, package_id, menu_id, created_at) VALUES (?, ?, ?, NOW())");
@@ -118,27 +142,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_SESSION["user_id"]) && isse
 
         $stmt->close();
 
-        if (!empty($coupon_id)) {
-            $stmt = $con->prepare("SELECT id FROM used_coupons WHERE customer_id = ? AND coupon_id = ?");
-            $stmt->bind_param("ii", $customer_id, $coupon_id);
-            $stmt->execute();
-            $used_result = $stmt->get_result();
-        
-            if ($used_result->num_rows == 0) {
-                $stmt = $con->prepare("INSERT INTO used_coupons (customer_id, coupon_id, used_at) VALUES (?, ?, NOW())");
-                $stmt->bind_param("ii", $customer_id, $coupon_id);
-                if (!$stmt->execute()) {
-                    die("Execution failed (used_coupons): " . $stmt->error);
-                }
-                echo "Coupon successfully saved to used_coupons!";
-            } else {
-                echo "Coupon already used!";
-            }
-            $stmt->close();
-        } else {
-            echo "Coupon ID is missing!";
-        }
-
         $mail = new PHPMailer(true);
         try {
             $mail->isSMTP();
@@ -168,7 +171,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_SESSION["user_id"]) && isse
                                 </div>
 
                                 <p style='font-size: 16px; line-height: 1.5; text-align: center;'>
-                                    Once paid, <strong>upload the screenshot of the transaction in the reservation history</strong>.
+                                    Once paid, <strong>upload the screenshot of the transaction in the reservation history</strong>.<br>
+                                    Your overall price is ₱ <strong>" . htmlspecialchars($final_price) . "</strong>.
                                 </p>
 
                                 <div style='margin-top: 20px; padding: 10px; background: #f2f2f2; border-left: 5px solid #e67e22;'>

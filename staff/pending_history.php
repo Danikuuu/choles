@@ -42,6 +42,7 @@ $sql = "SELECT
         JOIN package p ON cpm.package_id = p.id
         JOIN menu m ON cpm.menu_id = m.id
         JOIN user c ON cpm.customer_id = c.id
+        WHERE r.status = 'pending'
         ORDER BY r.event_date ASC
         LIMIT $limit OFFSET $offset";
 

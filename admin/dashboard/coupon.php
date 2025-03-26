@@ -260,7 +260,7 @@ $result = mysqli_query($con, $query);
                                         <label class="form-label">Discount Type</label>
                                         <select name="discount_type" class="form-control" required>
                                             <option value="percentage">Percentage (%)</option>
-                                            <option value="fixed">Fixed Amount ($)</option>
+                                            <option value="fixed">Fixed Amount (₱)</option>
                                         </select>
                                     </div>
                                     <div class="mb-3">

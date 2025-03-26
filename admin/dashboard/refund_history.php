@@ -1,13 +1,13 @@
 <?php
 session_start();
 
-if (!isset($_SESSION["user_id"]) || $_SESSION["role"] == 0 || $_SESSION["role"] == 1) {
-    header("Location: ../index.php"); // Redirect to home or login
+if (!isset($_SESSION["user_id"]) || $_SESSION["role"] == 0 || $_SESSION["role"] == 2) {
+    header("Location: ../../index.php"); // Redirect to home or login
     exit();
 }
 
 
-require_once '../data-handling/db/connection.php';
+require_once '../../data-handling/db/connection.php';
 
 $limit = 10; // Number of records per page
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
@@ -42,6 +42,7 @@ $sql = "SELECT
         JOIN package p ON cpm.package_id = p.id
         JOIN menu m ON cpm.menu_id = m.id
         JOIN user c ON cpm.customer_id = c.id
+        WHERE r.status = 'refunded'
         ORDER BY r.event_date ASC
         LIMIT $limit OFFSET $offset";
 
@@ -73,13 +74,12 @@ $total_pages = ceil($total_records / $limit);
 
     <title>CHOLES Admin - Menu</title>
 
-    <link rel="stylesheet" href="../admin/dashboard/vendor/fontawesome-free/css/all.min.css">
+    <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
     <link
         href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
         rel="stylesheet">
 
-    <!-- <link href="css/sb-admin-2.min.css" rel="stylesheet"> -->
-    <link rel="stylesheet" href="../admin/dashboard/css/sb-admin-2.css">
+    <link href="css/sb-admin-2.min.css" rel="stylesheet">
 
 </head>
 
@@ -87,59 +87,90 @@ $total_pages = ceil($total_records / $limit);
 
     <div id="wrapper">
 
-    <ul class="navbar-nav sidebar sidebar-dark accordion" id="accordionSidebar" style="background-color:  #059652;">
+        <ul class="navbar-nav sidebar sidebar-dark accordion" id="accordionSidebar" style="background-color:  #059652;">
 
-<a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.php">
-    <div class="sidebar-brand-text mx-3">CHOLES <sup>Staff</sup></div>
-</a>
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.php">
 
-<hr class="sidebar-divider my-0">
+                <div class="sidebar-brand-text mx-3">CHOLES <sup>Admin</sup></div>
+            </a>
 
-<hr class="sidebar-divider">
+            <hr class="sidebar-divider my-0">
 
-<div class="sidebar-heading">
-    Menu Management
-</div>
+            <li class="nav-item">
+                <a class="nav-link" href="index.php">
+                    <i class="fas fa-fw fa-tachometer-alt"></i>
+                    <span>Dashboard</span></a>
+            </li>
 
-<li class="nav-item active">
-    <a class="nav-link" href="./index.php">
-        <i class="fas fa-fw fa-utensils"></i>
-        <span>Menu</span></a>
-</li>
+            <hr class="sidebar-divider">
 
-<li class="nav-item">
-    <a class="nav-link" href="./package.php">
-        <i class="fas fa-fw fa-utensils"></i>
-        <span>Packages</span></a>
-</li>
+            <div class="sidebar-heading">
+                Menu Management
+            </div>
 
+            <li class="nav-item">
+                <a class="nav-link" href="./menu.php">
+                    <i class="fas fa-fw fa-utensils"></i>
+                    <span>Menu</span></a>
+            </li>
 
-<hr class="sidebar-divider">
+            <li class="nav-item">
+                <a class="nav-link" href="./package.php">
+                    <i class="fas fa-fw fa-utensils"></i>
+                    <span>Packages</span></a>
+            </li>
 
-<div class="sidebar-heading">
-    Reservations
-</div>
+            <li class="nav-item">
+                <a class="nav-link" href="./messages.php">
+                    <i class="fas fa-envelope"></i> Messages
+                    <span id="unreadBadge" class="badge badge-danger" style="display: none;"></span>
+                </a>
+            </li>
 
-<li class="nav-item">
-    <a class="nav-link" href="./reservation.php">
-        <i class="fas fa-fw fa-folder"></i>
-        <span>Reservations</span></a>
-</li>
+            <hr class="sidebar-divider">
 
-<hr class="sidebar-divider">
+            <div class="sidebar-heading">
+                Reservations
+            </div>
 
-<div class="sidebar-heading">
-    Feedback
-</div>
+            <li class="nav-item active">
+                <a class="nav-link" href="./reservation.php">
+                    <i class="fas fa-fw fa-folder"></i>
+                    <span>Reservations</span></a>
+            </li>
 
-<li class="nav-item ">
-    <a class="nav-link" href="./feedback.php">
-        <i class="fas fa-fw fa-chart-area"></i>
-        <span>Feedback</span></a>
-</li>
+            <li class="nav-item">
+                <a class="nav-link" href="./coupon.php">
+                    <i class="fas fa-fw fa-folder"></i>
+                    <span>Coupon</span></a>
+            </li>
 
+            <!-- Anomyties -->
+            <li class="nav-item">
+                <a class="nav-link" href="./inventory.php">
+                    <i class="fas fa-fw fa-chart-area"></i>
+                    <span>Equipments</span></a>
+            </li>
 
-</ul>
+            <li class="nav-item ">
+                <a class="nav-link" href="./feedback.php">
+                    <i class="fas fa-fw fa-chart-area"></i>
+                    <span>Feedback</span></a>
+            </li>
+
+            <li class="nav-item ">
+                <a class="nav-link" href="./users.php">
+                    <i class="fas fa-fw fa-user"></i>
+                    <span>Users</span></a>
+            </li>
+
+            <li class="nav-item ">
+                <a class="nav-link" href="./staff.php">
+                    <i class="fas fa-fw fa-user"></i>
+                    <span>Staff</span></a>
+            </li>
+
+        </ul>
 
         <div id="content-wrapper" class="d-flex flex-column">
 

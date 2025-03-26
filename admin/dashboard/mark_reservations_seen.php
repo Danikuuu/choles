@@ -10,7 +10,7 @@ if (!isset($_SESSION["user_id"]) || $_SESSION["role"] == 0 || $_SESSION["role"] 
     die(json_encode(["error" => "Unauthorized access"]));
 }
 
-$query = "UPDATE reservations SET status = 'reviewed' WHERE status = 'pending' OR cancelled > 0";
+$query = "UPDATE reservations SET status = 'reviewed' WHERE status = 'pending' OR cancelled OR 'completed' OR 'refunded' > 0";
 $con->query($query);
 
 ?>

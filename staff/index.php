@@ -70,6 +70,7 @@ $category_result = $con->query($category);
                     <i class="fas fa-fw fa-utensils"></i>
                     <span>Packages</span></a>
             </li>
+            
 
             <hr class="sidebar-divider">
 

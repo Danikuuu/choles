@@ -273,6 +273,20 @@ $result = $con->query($sql);
                                                     data-toggle="modal"
                                                     data-target="#editModal">Edit</button>
 
+                                                    <button class="btn btn-success btn-sm add-quantity-btn"
+                                                    data-add-id="<?php echo htmlspecialchars($row['id']); ?>"
+                                                    data-add-name="<?php echo htmlspecialchars($row['item_name']); ?>"
+                                                    data-add-unit="<?php echo htmlspecialchars($row['unit']); ?>"
+                                                    data-toggle="modal"
+                                                    data-target="#addQuantityModal">Add Quantity</button>
+
+                                                    <button class="btn btn-success btn-sm minus-quantity-btn"
+                                                    data-minus-id="<?php echo htmlspecialchars($row['id']); ?>"
+                                                    data-minus-name="<?php echo htmlspecialchars($row['item_name']); ?>"
+                                                    data-minus-unit="<?php echo htmlspecialchars($row['unit']); ?>"
+                                                    data-toggle="modal"
+                                                    data-target="#minusQuantityModal">Decrease Quantity</button>
+
                                                 <form method="POST" action="delete_inventory_item.php" style="display:inline;">
                                                     <input type="hidden" name="inventoryId" value="<?= htmlspecialchars($row['id']); ?>">
                                                     <button type="submit" class="btn btn-danger btn-sm">Delete</button>
@@ -295,7 +309,7 @@ $result = $con->query($sql);
                     <div class="modal-dialog" role="document">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h5 class="modal-title" id="editModalLabel">Edit Menu Item</h5>
+                                <h5 class="modal-title" id="editModalLabel">Edit Item</h5>
                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                     <span aria-hidden="true">&times;</span>
                                 </button>
@@ -325,8 +339,76 @@ $result = $con->query($sql);
                         </div>
                     </div>
                 </div>
+                <!-- Add Quantity -->
+                <div class="modal fade" id="addQuantityModal" tabindex="-1" role="dialog" aria-labelledby="eaddQuantityLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="addQuantityLabel">Add Stock</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <form action="increase_quantity.php" enctype="multipart/form-data" method="POST">
+                                    <input type="hidden" name="id" id="add-id">
 
+                                    <div class="form-group">
+                                        <label for="add-name">Item Name</label>
+                                        <input type="text" class="form-control" id="add-name" name="item_name" disabled>
+                                    </div>
 
+                                    <div class="form-group">
+                                        <label for="add-quantity">Quantity</label>
+                                        <input type="number" class="form-control" id="add-quantity" name="quantity" required>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="add-unit">Unit</label>
+                                        <input type="text" class="form-control" id="add-unit" name="unit" disabled>
+                                    </div>
+
+                                    <button type="submit" class="btn btn-primary">Update</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal fade" id="minusQuantityModal" tabindex="-1" role="dialog" aria-labelledby="minusQuantityLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="addQuantityLabel">Decrease Stock</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <form action="decrease_quantity.php" enctype="multipart/form-data" method="POST">
+                                    <input type="hidden" name="id" id="minus-id">
+
+                                    <div class="form-group">
+                                        <label for="minus-name">Item Name</label>
+                                        <input type="text" class="form-control" id="minus-name" name="item_name" disabled>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="minus-quantity">Quantity</label>
+                                        <input type="number" class="form-control" id="minus-quantity" name="quantity" required>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="minus-unit">Unit</label>
+                                        <input type="text" class="form-control" id="minus-unit" name="unit" disabled>
+                                    </div>
+
+                                    <button type="submit" class="btn btn-primary">Update</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
             
 
@@ -391,6 +473,29 @@ $result = $con->query($sql);
                 document.getElementById("edit-name").value = this.getAttribute("data-name");
                 document.getElementById("edit-quantity").value = this.getAttribute("data-quantity");
                 document.getElementById("edit-unit").value = this.getAttribute("data-unit");
+            });
+        });
+    });
+</script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        document.querySelectorAll(".add-quantity-btn").forEach(button => {
+            button.addEventListener("click", function() {
+                document.getElementById("add-id").value = this.getAttribute("data-add-id");
+                document.getElementById("add-name").value = this.getAttribute("data-add-name");
+                document.getElementById("add-unit").value = this.getAttribute("data-add-unit");
+            });
+        });
+    });
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        document.querySelectorAll(".minus-quantity-btn").forEach(button => {
+            button.addEventListener("click", function() {
+                document.getElementById("minus-id").value = this.getAttribute("data-minus-id");
+                document.getElementById("minus-name").value = this.getAttribute("data-minus-name");
+                document.getElementById("minus-unit").value = this.getAttribute("data-minus-unit");
             });
         });
     });

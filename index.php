@@ -302,66 +302,46 @@
 
         <center><h3 data-aos="fade-up" data-aos-delay="100">CUSTOMER FEEDBACK</h3></center>
         <div class="row">
+        <?php
+session_start();
+include "./data-handling/db/connection.php";
 
-          <div class="col-lg-4 col-md-6 d-flex" data-aos="fade-up" data-aos-delay="100">
-            <div class="member">
-              <img src="assets/img/trainers/trainer-1.jpg" class="img-fluid" alt="">
-              <div class="member-content">
-                <h4>Jan Jello Parungao</h4>
-                <span>Customer</span>
-                <p>
-                  Magni qui quod omnis unde et eos fuga et exercitationem. Odio veritatis perspiciatis quaerat qui aut aut aut
-                </p>
-                <div class="social">
-                  <a href=""><i class="bi bi-star-fill" style="color: #ffbb2c;"></i></a>
-                  <a href=""><i class="bi bi-star-fill" style="color: #ffbb2c;"></i></a>
-                  <a href=""><i class="bi bi-star-fill" style="color: #ffbb2c;"></i></a>
-                  <a href=""><i class="bi bi-star-fill" style="color: #ffbb2c;"></i></a>
-                  <a href=""><i class="bi bi-star"></i></a>
-                </div>
-              </div>
-            </div>
-          </div>
+$query = "SELECT u.fname, u.lname, f.rating, f.comment 
+          FROM feedback f
+          JOIN user u ON f.user_id = u.id
+          ORDER BY f.created_at DESC 
+          LIMIT 3";
+$result = mysqli_query($con, $query);
 
-          <div class="col-lg-4 col-md-6 d-flex" data-aos="fade-up" data-aos-delay="200">
-            <div class="member">
-              <img src="assets/img/trainers/trainer-2.jpg" class="img-fluid" alt="">
-              <div class="member-content">
-                <h4>Wesly</h4>
-                <span>Marketing</span>
-                <p>
-                  Repellat fugiat adipisci nemo illum nesciunt voluptas repellendus. In architecto rerum rerum temporibus
-                </p>
-                <div class="social">
-                  <a href=""><i class="bi bi-star-fill" style="color: #ffbb2c;"></i></a>
-                  <a href=""><i class="bi bi-star-fill" style="color: #ffbb2c;"></i></a>
-                  <a href=""><i class="bi bi-star-fill" style="color: #ffbb2c;"></i></a>
-                  <a href=""><i class="bi bi-star-fill"></i></a>
-                  <a href=""><i class="bi bi-star"></i></a>
-                </div>
-              </div>
-            </div>
-          </div><!-- End Team Member -->
+while ($row = mysqli_fetch_assoc($result)) {
+    $fullName = $row['fname'] . ' ' . $row['lname'];
+    $comment = $row['comment'];
+    $rating = $row['rating'];
 
-          <div class="col-lg-4 col-md-6 d-flex" data-aos="fade-up" data-aos-delay="300">
-            <div class="member">
-              <img src="assets/img/trainers/trainer-3.jpg" class="img-fluid" alt="">
-              <div class="member-content">
-                <h4>Billy</h4>
-                <span>Content</span>
-                <p>
-                  Voluptas necessitatibus occaecati quia. Earum totam consequuntur qui porro et laborum toro des clara
-                </p>
-                <div class="social">
-                  <a href=""><i class="bi bi-star-fill" style="color: #ffbb2c;"></i></a>
-                  <a href=""><i class="bi bi-star-fill" style="color: #ffbb2c;"></i></a>
-                  <a href=""><i class="bi bi-star-fill" style="color: #ffbb2c;"></i></a>
-                  <a href=""><i class="bi bi-star-fill" style="color: #ffbb2c;"></i></a>
-                  <a href=""><i class="bi bi-star"></i></a>
-                </div>
-              </div>
+    // Generate star ratings dynamically
+    $stars = '';
+    for ($i = 1; $i <= 5; $i++) {
+        if ($i <= $rating) {
+            $stars .= '<a href=""><i class="bi bi-star-fill" style="color: #ffbb2c;"></i></a>';
+        } else {
+            $stars .= '<a href=""><i class="bi bi-star"></i></a>';
+        }
+    }
+?>
+<div class="col-lg-4 col-md-6 d-flex" data-aos="fade-up" data-aos-delay="100">
+    <div class="member">
+        <img src="assets/img/jello.jpg" class="img-fluid" alt="">
+        <div class="member-content">
+            <h4><?= htmlspecialchars($fullName); ?></h4>
+            <span>Customer</span>
+            <p><?= htmlspecialchars($comment); ?></p>
+            <div class="social">
+                <?= $stars; ?>
             </div>
-          </div><!-- End Team Member -->
+        </div>
+    </div>
+</div>
+<?php } ?>
 
         </div>
 
