@@ -195,35 +195,55 @@ $category_result = $con->query($category);
                         <h1 class="h3 mb-0 text-gray-800">Menu Items</h1>
                     </div>
 
-                <div class="row justify-content-center align-items-center p-5">
-                    <?php if ($result->num_rows > 0): ?>
-                        <?php while ($row = $result->fetch_assoc()): ?>
-                            <div class="col-xl-3 col-md-6 mb-4">
-                                <div class="card shadow h-100 py-2">
-                                    <div class="card-body">
-                                        <div class="row no-gutters align-items-center">
-                                            <div class="col mr-2">
-                                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                                    <?php echo htmlspecialchars($row['name']); ?>
+                    <div class="text-center mb-3">
+                        <select id="categoryFilter" class="form-control w-auto d-inline">
+                            <option value="all">All</option>
+                            <?php
+                            // Get unique categories
+                            $categories = [];
+                            if ($result->num_rows > 0) {
+                                $result->data_seek(0); // Reset result pointer
+                                while ($row = $result->fetch_assoc()) {
+                                    if (!in_array($row['category'], $categories)) {
+                                        $categories[] = $row['category'];
+                                        echo '<option value="' . htmlspecialchars($row['category']) . '">' . htmlspecialchars($row['category']) . '</option>';
+                                    }
+                                }
+                            }
+                            ?>
+                        </select>
+                    </div>
+                    <div class="row justify-content-center align-items-center p-5" id="menuContainer">
+                        <?php if ($result->num_rows > 0): ?>
+                            <?php 
+                            $result->data_seek(0); // Reset result pointer
+                            while ($row = $result->fetch_assoc()): ?>
+                                <div class="col-xl-3 col-md-6 mb-4 menu-item" data-category="<?php echo htmlspecialchars($row['category']); ?>">
+                                    <div class="card shadow h-100 py-2">
+                                        <div class="card-body">
+                                            <div class="row no-gutters align-items-center">
+                                                <div class="col mr-2">
+                                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                                        <?php echo htmlspecialchars($row['name']); ?>
+                                                    </div>
+                                                    <span class="badge badge-success">
+                                                        <?php echo htmlspecialchars($row['category']); ?>
+                                                    </span>
                                                 </div>
-                                                <span class="badge badge-success">
-                                                    <?php echo htmlspecialchars($row['category']); ?>
-                                                </span>
-                                            </div>
-                                            <div class="col-auto">
-                                                <img src="../admin/dashboard/<?php echo htmlspecialchars($row['image']); ?>" alt="Menu Image" style="width: 150px; height: 100px; object-fit: cover;">
+                                                <div class="col-auto">
+                                                    <img src="../admin/dashboard/<?php echo htmlspecialchars($row['image']); ?>" alt="Menu Image" style="width: 150px; height: 100px; object-fit: cover;">
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
+                            <?php endwhile; ?>
+                        <?php else: ?>
+                            <div class="col-12 text-center">
+                                <p>No menus found.</p>
                             </div>
-                        <?php endwhile; ?>
-                    <?php else: ?>
-                        <div class="col-12 text-center">
-                            <p>No menus found.</p>
-                        </div>
-                    <?php endif; ?>
-                </div>
+                        <?php endif; ?>
+                    </div>
 
                 </div>
                 <!-- /.container-fluid -->
@@ -434,6 +454,22 @@ document.addEventListener("DOMContentLoaded", function () {
     setInterval(fetchCoupons, 30000);
 });
 
+</script>
+<script>
+document.getElementById("categoryFilter").addEventListener("change", function() {
+    let selectedCategory = this.value;
+    let menuItems = document.querySelectorAll(".menu-item");
+
+    menuItems.forEach(item => {
+        let category = item.getAttribute("data-category");
+
+        if (selectedCategory === "all" || category === selectedCategory) {
+            item.style.display = "block";
+        } else {
+            item.style.display = "none";
+        }
+    });
+});
 </script>
 
 </body>
