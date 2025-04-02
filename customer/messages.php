@@ -126,6 +126,24 @@ $user = $result->fetch_assoc();
                     <!-- Topbar Navbar -->
                     <ul class="navbar-nav ml-auto">
                     <li class="nav-item dropdown no-arrow mx-1">
+                            <a class="nav-link dropdown-toggle" href="#" id="couponnDropdown" role="button"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="fas fa-ticket-alt fa-fw"></i>
+                                <!-- Counter - Notifications -->
+                                <span class="badge badge-danger badge-counter" id="couponCount">0</span>
+                            </a>
+                            <!-- Dropdown - Notifications -->
+                            <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                                aria-labelledby="notificationDropdown">
+                                <h6 class="dropdown-header">
+                                    Coupons
+                                </h6>
+                                <div id="couponList">
+                                    <p class="text-center p-3 text-gray-600">No new coupon</p>
+                                </div>
+                            </div>
+                        </li>
+                    <li class="nav-item dropdown no-arrow mx-1">
                             <a class="nav-link dropdown-toggle" href="#" id="notificationDropdown" role="button"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <i class="fas fa-bell fa-fw"></i>

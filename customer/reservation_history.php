@@ -40,10 +40,10 @@ $sql = "SELECT
             r.down_payment, 
             r.downpayment_price,
             r.refund_img,
+            r.venue,
             p.package_name,
             p.package_price,
             p.people_count,
-            p.venue,
             m.name AS menu_name,
             m.description AS menu_description,
             m.category AS menu_category,
@@ -172,6 +172,25 @@ $result = $stmt->get_result();
 
                     <!-- Topbar Navbar -->
                     <ul class="navbar-nav ml-auto">
+
+                    <li class="nav-item dropdown no-arrow mx-1">
+                            <a class="nav-link dropdown-toggle" href="#" id="couponnDropdown" role="button"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="fas fa-ticket-alt fa-fw"></i>
+                                <!-- Counter - Notifications -->
+                                <span class="badge badge-danger badge-counter" id="couponCount">0</span>
+                            </a>
+                            <!-- Dropdown - Notifications -->
+                            <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                                aria-labelledby="notificationDropdown">
+                                <h6 class="dropdown-header">
+                                    Coupons
+                                </h6>
+                                <div id="couponList">
+                                    <p class="text-center p-3 text-gray-600">No new coupon</p>
+                                </div>
+                            </div>
+                        </li>
 
                     <li class="nav-item dropdown no-arrow mx-1">
                             <a class="nav-link dropdown-toggle" href="#" id="notificationDropdown" role="button"
@@ -592,6 +611,87 @@ $result = $stmt->get_result();
     setInterval(fetchNotifications, 30000);
 });
     </script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    function fetchCoupons() {
+        fetch("fetch_coupon.php")
+            .then(response => response.json())
+            .then(data => {
+                let count = data.length;
+                let couponCount = document.getElementById("couponCount");
+                let couponList = document.getElementById("couponList");
+
+                if (count > 0) {
+                    couponCount.innerText = count;
+                    couponCount.style.display = "inline-block";
+                    couponList.innerHTML = "";
+
+                    data.forEach(coupon => {
+                        let item = document.createElement("a");
+                        item.href = "#"; 
+                        item.classList.add("dropdown-item", "d-flex", "align-items-center");
+                        item.innerHTML = `
+                            <div class="mr-3">
+                                <div class="icon-circle bg-success">
+                                    <i class="fas fa-ticket-alt text-white"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="small text-gray-500">Expires: ${coupon.expiry_date}</div>
+                                <span class="font-weight-bold">${coupon.code} - ${coupon.discount_value} ${coupon.discount_type}</span>
+                                <div class="text-muted">${coupon.status}</div>
+                                <button data-id="${coupon.id}" class="btn btn-primary btn-sm claim-btn mt-2">Claim</button>
+                            </div>
+                        `;
+                        couponList.appendChild(item);
+                    });
+                } else {
+                    couponCount.style.display = "none";
+                    couponList.innerHTML = '<p class="text-center p-3 text-gray-600">No available coupons</p>';
+                }
+            });
+    }
+
+    function claimCoupon(couponId) {
+        console.log("Attempting to claim coupon with ID:", couponId);
+
+        fetch("claim_coupon.php", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: `coupon_id=${couponId}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert("Coupon claimed successfully!");
+                fetchCoupons();
+            } else {
+                alert("Failed to claim coupon: " + data.message);
+            }
+        });
+    }
+
+    document.getElementById("couponList").addEventListener("click", function (event) {
+        if (event.target.classList.contains("claim-btn")) {
+            let couponId = event.target.getAttribute("data-id");
+            console.log("Claim button clicked. Coupon ID:", couponId);
+
+            if (couponId) {
+                claimCoupon(couponId);
+            } else {
+                console.error("Coupon ID is null or undefined!");
+            }
+        }
+    });
+
+    fetchCoupons();
+    setInterval(fetchCoupons, 30000);
+});
+
+</script>
 
 </body>
 
