@@ -23,16 +23,23 @@ while ($row = $dateResult->fetch_assoc()) {
     $reservedDates[] = $row['event_date'];
 }
 
-$coupon = "SELECT code, discount_value FROM coupons WHERE status = 'active' AND expiry_date >= CURDATE() ORDER BY expiry_date ASC LIMIT 1";
-$couponResult = $con->query($coupon);
+$customerId = $_SESSION['user_id'];
 
-$couponCode = "";
+$couponQuery = "
+    SELECT c.code, c.discount_type, c.discount_value 
+    FROM coupons c
+    LEFT JOIN claimed_coupon cc ON c.id = cc.coupon_id 
+    WHERE c.status = 'active' 
+    AND c.expiry_date >= CURDATE() 
+    AND cc.user_id = ? 
+    ORDER BY c.expiry_date ASC
+    LIMIT 1";
 
-if ($couponResult->num_rows > 0) {
-    $row = $couponResult->fetch_assoc();
-    $couponCode = $row['code']; // Get the coupon code
-    $couponValue = $row['discount_value'];
-}
+$stmt = $con->prepare($couponQuery);
+$stmt->bind_param("i", $customerId);
+$stmt->execute();
+$couponResult = $stmt->get_result();
+
 ?>
 
 
@@ -244,8 +251,7 @@ if ($couponResult->num_rows > 0) {
                                 </div>
                                 <h4 class="text-center mt-2" id="modal_package_name"></h4>
                                 <p class="text-center"><strong>Price:</strong> <span id="modal_package_price"></span></p>
-                                <p class="text-center"><strong>Venue:</strong> <span id="modal_venue"></span></p>
-                                <p class="text-center"><strong>People Count:</strong> <span id="modal_people_count"></span></p>
+                                <p class="text-center"><strong>Pax:</strong> <span id="modal_people_count"></span></p>
                                 <p class="text-center"><strong>Venue Styling:</strong> <span id="modal_venue_styling"></span></p>
                                 <p class="text-center"><strong>Downpayment:</strong> <span id="modal_downpayment"></span></p>
 
@@ -283,39 +289,106 @@ if ($couponResult->num_rows > 0) {
                                     </div>
 
                                     <div class="form-group">
+                                        <label for="venue">Event Venue</label>
+                                        <input type="text" name="event_venue" id="event_venue" placeholder="Enter venue for the event" class="form-control" required>
+                                    </div>
+
+                                    <div class="form-group">
                                         <label for="start_time">Start Time</label>
-                                        <input type="time" class="form-control" id="start_time" name="start_time" required max="20:00">
+                                        <select class="form-control" name="start_time" id="start_time">
+                                            <?php
+                                            $startTime = strtotime("07:00"); // 7:00 PM
+                                            $endTime = strtotime("20:00");   // 8:00 PM
+                                            $interval = 30 * 60;             // 30 minutes interval (in seconds)
+
+                                            // Loop through the times and create options
+                                            for ($currentTime = $startTime; $currentTime <= $endTime; $currentTime += $interval) {
+                                                $timeFormatted = date("h:i A", $currentTime); // Format the time as 7:00 PM, 7:30 PM, etc.
+                                                echo "<option value='" . $timeFormatted . "'>" . $timeFormatted . "</option>";
+                                            }
+                                            ?>
+                                        </select>
                                     </div>
 
                                     <div class="form-group">
                                         <label for="end_time">End Time</label>
-                                        <input type="time" class="form-control" id="end_time" name="end_time" required>
+                                        <select class="form-control" name="end_time" id="end_time">
+                                            <?php
+                                            $startTime = strtotime("10:00");
+                                            $endTime = strtotime("23:00");
+                                            $interval = 30 * 60;             // 30 minutes interval (in seconds)
+
+                                            // Loop through the times and create options
+                                            for ($currentTime = $startTime; $currentTime <= $endTime; $currentTime += $interval) {
+                                                $timeFormatted = date("h:i A", $currentTime); // Format the time as 7:00 PM, 7:30 PM, etc.
+                                                echo "<option value='" . $timeFormatted . "'>" . $timeFormatted . "</option>";
+                                            }
+                                            ?>
+                                        </select>
                                     </div>
 
                                     <div class="form-group">
-                                        <label for="end_time">Coupon</label>
-                                        
-                                        <input type="text" class="form-control" id="coupon" name="coupon" placeholder="Type you coupon code here">
-                                        <label for="coupon">Available Coupon : <?php echo htmlspecialchars($couponCode); ?></label> <br>
-                                        <label for="coupon">Value : ₱ <?php echo htmlspecialchars($couponValue); ?></label>
-                                        <p class=""><strong>Note : Coupon is one time use only</strong></p>
+                                        <label for="coupon">Coupon</label>
+                                        <?php
+                                            if ($couponResult && $couponResult->num_rows > 0) {
+                                                while ($row = $couponResult->fetch_assoc()) {
+                                                    $discountType = htmlspecialchars($row['discount_type']);
+                                                    $discountValue = htmlspecialchars($row['discount_value']);
+
+                                                    // Format the discount display
+                                                    if ($discountType === 'fixed') {
+                                                        $formattedDiscount = '₱' . $discountValue;
+                                                    } elseif ($discountType === 'percentage') {
+                                                        $formattedDiscount = $discountValue . '% off';
+                                                    } else {
+                                                        $formattedDiscount = $discountValue; // Fallback in case of an unexpected type
+                                                    }
+                                                    
+                                                    echo '<input type="text" class="form-control" 
+                                                            value="' . htmlspecialchars($row['code']) . '" readonly
+                                                            data-value="' . $discountValue . '" 
+                                                            data-type="' . $discountType . '" 
+                                                            name="coupon" id="" 
+                                                            placeholder="' . htmlspecialchars($row['code']) . ' - ' . $formattedDiscount . '">';
+                                                }
+                                            } else {
+                                                echo '<input type="text" readonly class="form-control" value="" placeholder="No available coupons">';
+                                            }
+                                            ?>
+                                        <p><strong>Note: Coupon is one-time use only</strong></p>
                                     </div>
 
                                     <div class="form-group">
                                         <label for="menu_selection">Select Menus (<span id="menu_limit"></span> items)</label> <br>
-                                        <?php if ($menuResult->num_rows > 0): ?>
-                                            <?php while ($row = $menuResult->fetch_assoc()): ?>
-                                                <div class="form-check">
-                                                    <input type="checkbox" class="form-check-input menu-checkbox" id="menu_<?php echo $row['id']; ?>" name="menu_id[]" value="<?php echo $row['id']; ?>">
-                                                    <label class="form-check-label" for="menu_<?php echo $row['id']; ?>"><?php echo htmlspecialchars($row['name']); ?></label>
-                                                </div>
-                                            <?php endwhile; ?>
-                                        <?php else: ?>
-                                            <div class="col-12 text-center">
-                                                <p>No menu found.</p>
-                                            </div>
-                                        <?php endif; ?>
+                                        <?php
+                                            // Assuming your menuResult has a 'category' field
+                                            $itemsByCategory = [];
 
+                                            if ($menuResult->num_rows > 0) {
+                                                // Group menu items by category
+                                                while ($row = $menuResult->fetch_assoc()) {
+                                                    $category = $row['category']; // Replace with your actual category column name
+                                                    if (!isset($itemsByCategory[$category])) {
+                                                        $itemsByCategory[$category] = [];
+                                                    }
+                                                    $itemsByCategory[$category][] = $row;
+                                                }
+
+                                                // Display menu items by category
+                                                foreach ($itemsByCategory as $category => $items) {
+                                                    echo '<h5>' . htmlspecialchars($category) . '</h5>'; // Display category name
+
+                                                    foreach ($items as $row) {
+                                                        echo '<div class="form-check">
+                                                                <input type="checkbox" class="form-check-input menu-checkbox" id="menu_' . $row['id'] . '" name="menu_id[]" value="' . $row['id'] . '">
+                                                                <label class="form-check-label" for="menu_' . $row['id'] . '">' . htmlspecialchars($row['name']) . '</label>
+                                                            </div>';
+                                                    }
+                                                }
+                                            } else {
+                                                echo '<div class="col-12 text-center"><p>No menu found.</p></div>';
+                                            }
+                                            ?>
                                     <button type="submit" class="btn btn-success">Confirm Reservation</button>
                                 </form>
                             </div>
@@ -401,7 +474,6 @@ if ($couponResult->num_rows > 0) {
 
                     // Correctly select elements
                     let packagePrice = this.querySelector(".package-price")?.textContent.trim() || "N/A";
-                    let venue = this.querySelector(".package-venue")?.textContent.trim() || "N/A";
                     let peopleCount = this.querySelector(".package-people")?.textContent.trim() || "N/A";
                     let venueStyling = this.querySelector(".package-styling")?.textContent.trim() || "N/A";
                     let downpayment = this.querySelector(".package-downpayment")?.textContent.trim() || "N/A";
@@ -412,7 +484,6 @@ if ($couponResult->num_rows > 0) {
                     document.getElementById("menu_limit").innerText = menuCount;
                     document.getElementById("modal_package_name").innerText = packageName;
                     document.getElementById("modal_package_price").innerText = packagePrice;
-                    document.getElementById("modal_venue").innerText = venue;
                     document.getElementById("modal_people_count").innerText = peopleCount;
                     document.getElementById("modal_venue_styling").innerText = venueStyling;
                     document.getElementById("modal_downpayment").innerText = downpayment;

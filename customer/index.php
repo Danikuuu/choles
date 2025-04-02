@@ -122,6 +122,26 @@ $category_result = $con->query($category);
 
                     <!-- Topbar Navbar -->
                     <ul class="navbar-nav ml-auto">
+                        <!-- coupon bar -->
+                        <li class="nav-item dropdown no-arrow mx-1">
+                            <a class="nav-link dropdown-toggle" href="#" id="couponnDropdown" role="button"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="fas fa-ticket-alt fa-fw"></i>
+                                <!-- Counter - Notifications -->
+                                <span class="badge badge-danger badge-counter" id="couponCount">0</span>
+                            </a>
+                            <!-- Dropdown - Notifications -->
+                            <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                                aria-labelledby="notificationDropdown">
+                                <h6 class="dropdown-header">
+                                    Coupons
+                                </h6>
+                                <div id="couponList">
+                                    <p class="text-center p-3 text-gray-600">No new coupon</p>
+                                </div>
+                            </div>
+                        </li>
+
                         <li class="nav-item dropdown no-arrow mx-1">
                             <a class="nav-link dropdown-toggle" href="#" id="notificationDropdown" role="button"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -267,73 +287,155 @@ $category_result = $con->query($category);
     </script>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-    function fetchNotifications() {
-        fetch("fetch_notifications.php") // Replace with your backend endpoint
+            function fetchNotifications() {
+                fetch("fetch_notifications.php") // Replace with your backend endpoint
+                    .then(response => response.json())
+                    .then(data => {
+                        let count = data.length;
+                        let notificationCount = document.getElementById("notificationCount");
+                        let notificationList = document.getElementById("notificationList");
+
+                        if (count > 0) {
+                            notificationCount.innerText = count;
+                            notificationCount.style.display = "inline-block";
+
+                            notificationList.innerHTML = "";
+                            data.forEach(notification => {
+                                let item = document.createElement("a");
+                                item.href = "#"; // Update with actual link
+                                item.classList.add("dropdown-item", "d-flex", "align-items-center");
+                                item.innerHTML = `
+                                    <div class="mr-3">
+                                        <div class="icon-circle bg-primary">
+                                            <i class="fas fa-info text-white"></i>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="small text-gray-500">${notification.date}</div>
+                                        <span class="font-weight-bold">${notification.message}</span>
+                                    </div>
+                                `;
+                                notificationList.appendChild(item);
+                            });
+                        } else {
+                            notificationCount.style.display = "none";
+                            notificationList.innerHTML = '<p class="text-center p-3 text-gray-600">No new notifications</p>';
+                        }
+                    });
+            }
+
+            // Fetch notifications when page loads
+            fetchNotifications();
+
+            // Mark notifications as seen when dropdown is clicked
+            document.getElementById("notificationDropdown").addEventListener("click", function () {
+                fetch("mark_reservations_seen.php", { method: "POST" });
+                document.getElementById("notificationCount").style.display = "none";
+            });
+
+            // Auto-refresh notifications every 30 seconds
+            setInterval(fetchNotifications, 30000);
+        });
+            </script>
+            <script>function fetchUnreadCount() {
+            $.ajax({
+                url: "fetch_unread.php",
+                type: "GET",
+                dataType: "json",
+                success: function(response) {
+                    if (response.unread_count > 0) {
+                        $("#unreadBadge").text(response.unread_count).show();
+                    } else {
+                        $("#unreadBadge").hide();
+                    }
+                }
+            });
+        }
+
+     setInterval(fetchUnreadCount, 5000); // Check for new messages every 5 seconds
+    </script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    function fetchCoupons() {
+        fetch("fetch_coupon.php")
             .then(response => response.json())
             .then(data => {
                 let count = data.length;
-                let notificationCount = document.getElementById("notificationCount");
-                let notificationList = document.getElementById("notificationList");
+                let couponCount = document.getElementById("couponCount");
+                let couponList = document.getElementById("couponList");
 
                 if (count > 0) {
-                    notificationCount.innerText = count;
-                    notificationCount.style.display = "inline-block";
+                    couponCount.innerText = count;
+                    couponCount.style.display = "inline-block";
+                    couponList.innerHTML = "";
 
-                    notificationList.innerHTML = "";
-                    data.forEach(notification => {
+                    data.forEach(coupon => {
                         let item = document.createElement("a");
-                        item.href = "#"; // Update with actual link
+                        item.href = "#"; 
                         item.classList.add("dropdown-item", "d-flex", "align-items-center");
                         item.innerHTML = `
                             <div class="mr-3">
-                                <div class="icon-circle bg-primary">
-                                    <i class="fas fa-info text-white"></i>
+                                <div class="icon-circle bg-success">
+                                    <i class="fas fa-ticket-alt text-white"></i>
                                 </div>
                             </div>
                             <div>
-                                <div class="small text-gray-500">${notification.date}</div>
-                                <span class="font-weight-bold">${notification.message}</span>
+                                <div class="small text-gray-500">Expires: ${coupon.expiry_date}</div>
+                                <span class="font-weight-bold">${coupon.code} - ${coupon.discount_value} ${coupon.discount_type}</span>
+                                <div class="text-muted">${coupon.status}</div>
+                                <button data-id="${coupon.id}" class="btn btn-primary btn-sm claim-btn mt-2">Claim</button>
                             </div>
                         `;
-                        notificationList.appendChild(item);
+                        couponList.appendChild(item);
                     });
                 } else {
-                    notificationCount.style.display = "none";
-                    notificationList.innerHTML = '<p class="text-center p-3 text-gray-600">No new notifications</p>';
+                    couponCount.style.display = "none";
+                    couponList.innerHTML = '<p class="text-center p-3 text-gray-600">No available coupons</p>';
                 }
             });
     }
 
-    // Fetch notifications when page loads
-    fetchNotifications();
+    function claimCoupon(couponId) {
+        console.log("Attempting to claim coupon with ID:", couponId);
 
-    // Mark notifications as seen when dropdown is clicked
-    document.getElementById("notificationDropdown").addEventListener("click", function () {
-        fetch("mark_reservations_seen.php", { method: "POST" });
-        document.getElementById("notificationCount").style.display = "none";
-    });
-
-    // Auto-refresh notifications every 30 seconds
-    setInterval(fetchNotifications, 30000);
-});
-    </script>
-    <script>function fetchUnreadCount() {
-    $.ajax({
-        url: "fetch_unread.php",
-        type: "GET",
-        dataType: "json",
-        success: function(response) {
-            if (response.unread_count > 0) {
-                $("#unreadBadge").text(response.unread_count).show();
+        fetch("claim_coupon.php", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: `coupon_id=${couponId}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert("Coupon claimed successfully!");
+                fetchCoupons();
             } else {
-                $("#unreadBadge").hide();
+                alert("Failed to claim coupon: " + data.message);
+            }
+        });
+    }
+
+    document.getElementById("couponList").addEventListener("click", function (event) {
+        if (event.target.classList.contains("claim-btn")) {
+            let couponId = event.target.getAttribute("data-id");
+            console.log("Claim button clicked. Coupon ID:", couponId);
+
+            if (couponId) {
+                claimCoupon(couponId);
+            } else {
+                console.error("Coupon ID is null or undefined!");
             }
         }
     });
-}
 
-setInterval(fetchUnreadCount, 5000); // Check for new messages every 5 seconds
+    fetchCoupons();
+    setInterval(fetchCoupons, 30000);
+});
+
 </script>
+
 </body>
 
 </html>

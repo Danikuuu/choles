@@ -40,6 +40,7 @@ $sql = "SELECT
             r.status,
             r.down_payment, 
             r.downpayment_price,
+            r.balance,
             r.refund_img,
             p.package_name,
             p.package_price,
@@ -264,6 +265,7 @@ $result = $stmt->get_result();
                         <th>Date</th>
                         <th>Price</th>
                         <th>Downpayment</th>
+                        <th>Balance</th>
                         <th>Status</th>
                         <th>Action</th>
                     </tr>
@@ -279,6 +281,7 @@ $result = $stmt->get_result();
                     <td><?= htmlspecialchars($row['event_date']) ?></td>
                     <td><?= htmlspecialchars($row['package_price']) ?></td>
                     <td><?= htmlspecialchars($row['downpayment_price']) ?></td>
+                    <td><?= htmlspecialchars($row['balance']) ?></td>
                     <td><?= htmlspecialchars($row['status']) ?></td>
                     <td>
                         <button class="btn btn-success btn-sm view-btn"
@@ -289,6 +292,7 @@ $result = $stmt->get_result();
                             data-event-date="<?= htmlspecialchars($row['event_date']) ?>"
                             data-price="<?= htmlspecialchars($row['package_price']) ?>"
                             data-downpayment_price="<?= htmlspecialchars($row['downpayment_price']) ?>"
+                            data-balance="<?= htmlspecialchars($row['balance']) ?>"
                             data-status="<?= htmlspecialchars($row['status']) ?>"
                             data-downpayment="<?= htmlspecialchars($row['down_payment']) ?>"
                             data-refund-image="<?= htmlspecialchars($row['refund_img']) ?>">
@@ -368,6 +372,10 @@ $result = $stmt->get_result();
                                 <tr>
                                     <th>Downpayment</th>
                                     <td id="modalDownpayment"></td>
+                                </tr>
+                                <tr>
+                                    <th>Balance</th>
+                                    <td id="modalBalance"></td>
                                 </tr>
                                 <tr id="downpaymentRow">
                                     <th>Downpayment Image</th>
@@ -464,6 +472,7 @@ $result = $stmt->get_result();
                 let eventDate = $(this).data("event-date");
                 let price = $(this).data("price");
                 let downpayment_price = $(this).data("downpayment_price");
+                let balance = $(this).data("balance");
                 let status = $(this).data("status");
                 let downpayment = $(this).data("downpayment");
                 let refund = $(this).data("refund-image");
@@ -477,6 +486,7 @@ $result = $stmt->get_result();
                 $("#modalPrice").text(price);
                 $("#modalStatus").text(status);
                 $("#modalDownpayment").text(downpayment_price);
+                $("#modalBalance").text(balance);
                 $("#modalRefund").text(refund);
 
                 console.log(refund);

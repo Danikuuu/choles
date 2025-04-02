@@ -223,13 +223,6 @@ $result = $stmt->get_result();
                 <div class="container-fluid">
                 <div class="d-sm-flex align-items-center justify-content-between mb-4">
                         <h1 class="h3 mb-0 text-gray-800">Reservation History</h1>
-                        <div class="">
-                            <a class="mr-3 text-white btn btn-sm btn-warning" href="./pending_history.php">Pending</a>
-                            <a class="mr-3 text-white btn btn-sm btn-primary" href="./completed_history.php">Completed</a>
-                            <a class="mr-3 text-white btn btn-sm btn-success" href="./approved_history.php">Approved</a>
-                            <a class="mr-3 text-white btn btn-sm btn-danger" href="./cancelled_history.php">Cancelled</a>
-                            <a class="mr-3 text-white btn btn-sm btn-info" href="./refund_history.php">Refund</a>
-                        </div>
                     </div>
 
                     <div class=" p-3" style="z-index: 11">

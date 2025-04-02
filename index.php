@@ -1,3 +1,27 @@
+<?php 
+session_start();
+include "./data-handling/db/connection.php";
+$menus = "SELECT 
+    m.name AS menu_name, 
+    m.image AS menu_image,
+    m.description AS menu_description, 
+    COUNT(m.id) AS reservation_count
+    FROM customer_package_menu cpm
+    JOIN reservations r ON cpm.id = r.customer_package_id 
+    JOIN menu m ON cpm.menu_id = m.id
+    GROUP BY m.id, m.image
+    ORDER BY reservation_count DESC
+    LIMIT 3;";
+
+  $MenuResult = $con->query($menus);
+
+  $topMenus = [];
+  while ($row = $MenuResult->fetch_assoc()) {
+    $topMenus[] = $row;
+  }
+?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -293,7 +317,39 @@
 
     </section><!-- /Features Section -->
 
+    <section id="why-us" class="section why-us">
 
+      <div class="container">
+        <div class="row gy-4">
+
+  
+          <div class="col-lg-8 d-flex align-items-stretch">
+            <div class="row gy-4" data-aos="fade-up" data-aos-delay="200">
+              <?php foreach ($topMenus as $menu) { ?>
+                <div class="col-xl-4">
+                  <div class="icon-box d-flex flex-column justify-content-center align-items-center">
+                    <img src="./admin/dashboard/<?= htmlspecialchars($menu['menu_image']); ?>" alt="<?= htmlspecialchars($menu['menu_name']); ?>" style="width: 180px; height: 130px; object-fit: cover;">
+                    <h4><?= htmlspecialchars($menu['menu_name']); ?></h4>
+                    <p><?= htmlspecialchars($menu['menu_description']); ?></p>
+                  </div>
+                </div>
+              <?php } ?>
+  
+            </div>
+          </div>
+          <div class="col-lg-4" data-aos="fade-up" data-aos-delay="100">
+            <div class="why-box" style="height: 100%;">
+              <h3>Favorite Foods</h3>
+              <p>
+                Explore our most-loved dishes, carefully selected by our customers. These top-rated menu items bring joy to every celebration, offering a perfect balance of taste and presentation.  
+                Whether you're planning a birthday, anniversary, or corporate event, our delicious favorites ensure a memorable dining experience.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section><!-- /Why Us Section -->
 
     <!-- Trainers Index Section -->
     <section id="trainers-index" class="section trainers-index">

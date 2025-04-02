@@ -1,9 +1,13 @@
 <?php
 session_start();
 include "./data-handling/db/connection.php";
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\SMTP;
+use PHPMailer\PHPMailer\Exception;
 
-mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
-$con->set_charset("utf8mb4");
+require 'vendor/autoload.php';
+
+$mail = new PHPMailer(true);
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = trim(htmlspecialchars($_POST["email"]));
@@ -46,14 +50,45 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $_SESSION["lname"] = $lname;
             $_SESSION["role"] = $role;
 
-            if ($role == 1) { 
-                header("Location: ./admin/dashboard/index.php");
-            } elseif ($role == 2) { 
-                header("Location: ./staff/index.php");
-            } else {
-                header("Location: ./customer/index.php");
-            }
-            exit();
+            // $otp = rand(100000, 999999);
+            $otp = 111111 ;
+
+              $_SESSION["login_otp"] = $otp;
+
+              try {
+                  $mail->isSMTP();
+                  $mail->Host = 'smtp.gmail.com';
+                  $mail->SMTPAuth = true;
+                  $mail->Username = 'cholescatering@gmail.com';
+                  $mail->Password = 'kuse tvje epft vvuq';
+                  $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+                  $mail->Port = 587;
+
+                  $mail->setFrom('cholescatering@gmail.com', 'CHOLES Support');
+                  $mail->addAddress($email, "$fname $lname");
+
+                  $mail->isHTML(true);
+                  $mail->Subject = 'OTP Verification - CHOLES';
+                  $mail->Body = "<div style='font-family: Arial, sans-serif; color: #333; max-width: 500px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; background: #f9f9f9; text-align: center;'>
+                                    <h3 style='color: #2c3e50;'>Hello, " . htmlspecialchars($fname) . "!</h3>
+                                    <p style='font-size: 16px; line-height: 1.5;'>Your OTP code is:</p>
+                                    <div style='display: inline-block; font-size: 24px; font-weight: bold; color: #e74c3c; background: #fff; padding: 10px 20px; border: 2px dashed #e74c3c; border-radius: 5px; margin: 10px 0;'>
+                                        " . htmlspecialchars($otp) . "
+                                    </div>
+                                    <p style='font-size: 16px; line-height: 1.5;'>Please enter this code to verify your account.</p>
+                                    <p style='font-size: 14px; color: #777;'>This OTP will expire in 10 minutes. Do not share it with anyone.</p>
+                                </div>
+                            ";
+
+                  $mail->send();
+
+
+                  header("Location: login_otp.php");
+                  exit();
+              } catch (Exception $e) {
+                  error_log("Mailer Error: " . $mail->ErrorInfo);
+                  $error = "Failed to send OTP. Please try again.";
+              }
         } else {
             $_SESSION["error"] = "Invalid password!";
         }

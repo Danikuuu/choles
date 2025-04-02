@@ -279,6 +279,14 @@ $result = mysqli_query($con, $query);
                 </div>
 
                     <!-- Content Row -->
+
+
+
+
+
+
+
+                    <!-- This part is where i add the edit acyivstr reactivate coupon -->
                     <div class="row justify-content-center align-items-center">
                         <div class="card shadow mb-4 w-75">
                             <div class="card-header py-3">
@@ -293,25 +301,94 @@ $result = mysqli_query($con, $query);
                                             <th>Created Date</th>
                                             <th>Expiry Date</th>
                                             <th>Status</th>
+                                            <th>Action</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <?php while ($row = mysqli_fetch_assoc($result)) : ?>
                                             <tr>
-                                                <td><?= $row['code']; ?></td>
-                                                <td><?= $row['discount_value']; ?> <?= $row['discount_type'] == 'percentage' ? '%' : '$'; ?></td>
+                                                <td><?= htmlspecialchars($row['code']); ?></td>
+                                                <td><?= htmlspecialchars($row['discount_value']); ?> <?= $row['discount_type'] == 'percentage' ? '%' : '₱'; ?></td>
                                                 <td><?= date('M d, Y', strtotime($row['created_at'])); ?></td>
                                                 <td><?= date('M d, Y', strtotime($row['expiry_date'])); ?></td>
                                                 <td>
                                                     <span class="badge <?= $row['status'] == 'expired' ? 'bg-danger' : 'bg-success'; ?>">
-                                                        <?= $row['status']; ?>
+                                                        <?= htmlspecialchars($row['status']); ?>
                                                     </span>
+                                                </td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-success editCouponBtn"
+                                                            data-id="<?= $row['id']; ?>"
+                                                            data-code="<?php echo htmlspecialchars($row['code']); ?>"
+                                                            data-value="<?php echo htmlspecialchars($row['discount_value']); ?>"
+                                                            data-type="<?php echo htmlspecialchars($row['discount_type']); ?>"
+                                                            data-expiry="<?= $row['expiry_date']; ?>"
+                                                            data-toggle="modal"
+                                                            data-target="#editCouponModal">Edit</button>
+
+                                                    <form action="coupon_actions.php" method="POST" style="display:inline;">
+                                                        <input type="hidden" name="coupon_id" value="<?= $row['id']; ?>">
+                                                        <button type="submit" class="btn btn-sm btn-primary" name="action" value="reactivate">Re-activate</button>
+                                                    </form>
+
+                                                    <form action="coupon_actions.php" method="POST" style="display:inline;">
+                                                        <input type="hidden" name="coupon_id" value="<?= $row['id']; ?>">
+                                                        <button type="submit" class="btn btn-sm btn-danger" name="action" value="deactivate">Deactivate</button>
+                                                    </form>
                                                 </td>
                                             </tr>
                                         <?php endwhile; ?>
                                     </tbody>
                                 </table>
 
+                                <!-- Edit Modal -->
+                                <div class="modal fade" id="editCouponModal" tabindex="-1" aria-labelledby="editCouponModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="editCouponModalLabel">Edit Coupon</h5>
+                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <form method="POST" action="coupon_actions.php">
+                                                <div class="modal-body">
+                                                    <input type="hidden" name="coupon_id" id="editCouponId">
+                                                    
+                                                    <div class="form-group">
+                                                        <label>Coupon Code</label>
+                                                        <input type="text" class="form-control" name="code" id="editCode" required>
+                                                    </div>
+
+                                                    <div class="form-group">
+                                                        <label>Discount Value</label>
+                                                        <input type="number" class="form-control" name="discount_value" id="editDiscountValue" required>
+                                                    </div>
+
+                                                    <div class="form-group">
+                                                        <label>Discount Type</label>
+                                                        <select class="form-control" name="discount_type" id="editDiscountType">
+                                                            <option value="fixed">Fixed (₱)</option>
+                                                            <option value="percentage">Percentage (%)</option>
+                                                        </select>
+                                                    </div>
+
+                                                    <div class="form-group">
+                                                        <label>Expiry Date</label>
+                                                        <input type="date" class="form-control" name="expiry_date" id="editExpiryDate" required>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                                    <button type="submit" name="action" value="edit" class="btn btn-primary">Save Changes</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                                <!-- the edit of  -->
                                 <!-- Pagination -->
                                 <nav>
                                     <ul class="pagination justify-content-center">
@@ -529,6 +606,29 @@ document.addEventListener("DOMContentLoaded", function () {
     setInterval(fetchNotifications, 30000);
 });
 </script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".editCouponBtn").forEach(button => {
+        button.addEventListener("click", function () {
+            let couponId = this.getAttribute("data-id");
+            let couponCode = this.getAttribute("data-code");
+            let discountValue = this.getAttribute("data-value");
+            let discountType = this.getAttribute("data-type");
+            let expiryDate = this.getAttribute("data-expiry");
+
+            // Assign values to modal inputs
+            document.getElementById("editCouponId").value = couponId;
+            document.getElementById("editCode").value = couponCode;
+            document.getElementById("editDiscountValue").value = discountValue;
+            document.getElementById("editDiscountType").value = discountType;
+            document.getElementById("editExpiryDate").value = expiryDate;
+
+        });
+    });
+});
+</script>
+
 </body>
 
 </html>

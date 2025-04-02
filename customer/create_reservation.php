@@ -24,12 +24,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_SESSION["user_id"]) && isse
     $menu_ids = $_POST['menu_id'] ?? [];
     $event_type = $_POST["event_type"];
     $event_theme = $_POST["event_theme"];
+    $event_venue = $_POST["event_venue"];
     $start_time = date("H:i:s", strtotime($_POST["start_time"]));
     $end_time = date("H:i:s", strtotime($_POST["end_time"]));
     $coupon_code = isset($_POST["coupon"]) ? trim($_POST["coupon"]) : null;
     $coupon_id = null;
 
-    if (!$customer_id || !$package_id || !$event_date || empty($menu_ids) || !$event_type || !$event_theme || !$start_time || !$end_time) {
+
+    if (!$customer_id || !$package_id || !$event_date || empty($menu_ids) || !$event_type || !$event_theme || !$event_venue || !$start_time || !$end_time) {
         $_SESSION['error'] = "All fields are required.";
         header("Location: package.php");
         exit;
@@ -37,12 +39,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_SESSION["user_id"]) && isse
 
     try {
         // Fetch package price
-        $stmt = $con->prepare("SELECT downpayment FROM package WHERE id = ?");
+        $stmt = $con->prepare("SELECT downpayment, package_price FROM package WHERE id = ?");
         $stmt->bind_param("i", $package_id);
         $stmt->execute();
         $result = $stmt->get_result();
         $row = $result->fetch_assoc();
-        $package_price = $row['downpayment'];
+        $package_price = $row['package_price'];
+        $downpayment_price = $row['downpayment'];
         $stmt->close();
 
         // Apply coupon discount if valid
@@ -56,51 +59,60 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_SESSION["user_id"]) && isse
             if ($coupon_result->num_rows > 0) {
                 $coupon = $coupon_result->fetch_assoc();
                 $coupon_id = $coupon['id'];
-        
+            
                 // Check if the coupon has already been used by this customer
                 $stmt = $con->prepare("SELECT id FROM used_coupons WHERE customer_id = ? AND coupon_id = ?");
                 $stmt->bind_param("ii", $customer_id, $coupon_id);
                 $stmt->execute();
                 $used_result = $stmt->get_result();
-        
+            
                 if ($used_result->num_rows > 0) {
                     $_SESSION['error'] = "Coupon already used!";
                     header("Location: package.php");
                     exit;
                 }
-        
+            
                 // Insert into used_coupons table
                 $stmt = $con->prepare("INSERT INTO used_coupons (customer_id, coupon_id, used_at) VALUES (?, ?, NOW())");
                 $stmt->bind_param("ii", $customer_id, $coupon_id);
                 if (!$stmt->execute()) {
                     die("Execution failed (used_coupons): " . $stmt->error);
                 }
-        
-                // Validate if coupon is already marked as used
+            
+                // Validate if coupon is expired
                 if ($coupon['status'] === 'expired') {
                     $_SESSION['error'] = "This coupon is expired.";
                     header("Location: package.php");
                     exit;
                 }
-        
+            
                 // Apply the discount
                 $discount_type = $coupon['discount_type'];
                 $discount_value = $coupon['discount_value'];
-        
+            
                 if ($discount_type == 'percentage') {
                     $discount_amount = ($package_price * $discount_value) / 100;
+                } elseif ($discount_type == 'fixed') {
+                    $discount_amount = min($package_price, $discount_value);
                 } else {
+                    // If another type of discount exists, apply it here
                     $discount_amount = $discount_value;
                 }
-        
+            
+                // Calculate final price after discount
                 $final_price = max(0, $package_price - $discount_amount);
+                $discounted_price = $final_price - $downpayment_price;
+            
             } else {
                 $_SESSION['error'] = "Invalid or expired coupon.";
                 header("Location: package.php");
                 exit;
             }
-        
+            
             $stmt->close();
+        } else {
+            $final_price = $package_price;
+            $discounted_price = $final_price - $downpayment_price;
         }
         
 
@@ -123,17 +135,17 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_SESSION["user_id"]) && isse
         // Insert into `reservations`
         $stmt = $con->prepare("INSERT INTO reservations 
             (customer_package_id, event_date, down_payment, refund, refund_img, refund_proof, 
-            downpayment_price, status, event_type, event_theme, start_time, end_time, 
+            downpayment_price, balance, status, event_type, event_theme, venue, start_time, end_time, 
             created_at, updated_at) 
-            VALUES (?, ?, NULL, 0, NULL, NULL, ?, 'pending', ?, ?, ?, ?, NOW(), NOW())");
+            VALUES (?, ?, NULL, 0, NULL, NULL, ?, ?, 'pending', ?, ?, ?, ?, ?, NOW(), NOW())");
 
         if (!$stmt) {
             die("Prepare failed (reservations): " . $con->error);
         }
 
-        $stmt->bind_param("issssss", 
-            $customer_package_id, $event_date, $final_price, 
-            $event_type, $event_theme, $start_time, $end_time
+        $stmt->bind_param("issssssss", 
+            $customer_package_id, $event_date, $downpayment_price, $discounted_price,
+            $event_type, $event_theme, $event_venue, $start_time, $end_time
         );
 
         if (!$stmt->execute()) {
@@ -142,6 +154,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_SESSION["user_id"]) && isse
 
         $stmt->close();
 
+        
         $mail = new PHPMailer(true);
         try {
             $mail->isSMTP();
@@ -172,7 +185,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_SESSION["user_id"]) && isse
 
                                 <p style='font-size: 16px; line-height: 1.5; text-align: center;'>
                                     Once paid, <strong>upload the screenshot of the transaction in the reservation history</strong>.<br>
-                                    Your overall price is ₱ <strong>" . htmlspecialchars($final_price) . "</strong>.
+                                    Your overall price is ₱ <strong>" . htmlspecialchars($discounted_price) . "</strong>.
                                 </p>
 
                                 <div style='margin-top: 20px; padding: 10px; background: #f2f2f2; border-left: 5px solid #e67e22;'>
