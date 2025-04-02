@@ -386,8 +386,7 @@ while ($row = mysqli_fetch_assoc($result)) {
 ?>
 <div class="col-lg-4 col-md-6 d-flex" data-aos="fade-up" data-aos-delay="100">
     <div class="member">
-        <img src="assets/img/jello.jpg" class="img-fluid" alt="">
-        <div class="member-content">
+        <div class="member-content p-3" style="width: 400px;">
             <h4><?= htmlspecialchars($fullName); ?></h4>
             <span>Customer</span>
             <p><?= htmlspecialchars($comment); ?></p>
