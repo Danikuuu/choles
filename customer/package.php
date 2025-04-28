@@ -32,13 +32,17 @@ $couponQuery = "
     WHERE c.status = 'active' 
     AND c.expiry_date >= CURDATE() 
     AND cc.user_id = ? 
+    AND NOT EXISTS (
+        SELECT 1 FROM used_coupons uc WHERE uc.coupon_id = c.id AND uc.customer_id = ?
+    )
     ORDER BY c.expiry_date ASC
     LIMIT 1";
 
 $stmt = $con->prepare($couponQuery);
-$stmt->bind_param("i", $customerId);
+$stmt->bind_param("ii", $customerId, $customerId);
 $stmt->execute();
 $couponResult = $stmt->get_result();
+
 
 ?>
 

@@ -71,19 +71,59 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_SESSION["user_id"]) && isse
                     header("Location: package.php");
                     exit;
                 }
-            
-                // Insert into used_coupons table
-                $stmt = $con->prepare("INSERT INTO used_coupons (customer_id, coupon_id, used_at) VALUES (?, ?, NOW())");
-                $stmt->bind_param("ii", $customer_id, $coupon_id);
-                if (!$stmt->execute()) {
-                    die("Execution failed (used_coupons): " . $stmt->error);
-                }
+
             
                 // Validate if coupon is expired
                 if ($coupon['status'] === 'expired') {
                     $_SESSION['error'] = "This coupon is expired.";
                     header("Location: package.php");
                     exit;
+                }
+
+                $stmt = $con->prepare("INSERT INTO customer_package_menu (customer_id, package_id, menu_id, created_at) VALUES (?, ?, ?, NOW())");
+                if (!$stmt) {
+                    die("Prepare failed (customer_package_menu): " . $con->error);
+                }
+
+                foreach ($menu_ids as $menu_id) {
+                    $stmt->bind_param("iii", $customer_id, $package_id, $menu_id);
+                    if (!$stmt->execute()) {
+                        die("Execution failed (customer_package_menu): " . $stmt->error);
+                    }
+                }
+
+                $customer_package_id = $stmt->insert_id;
+                $stmt->close();
+
+                // Insert into `reservations`
+                $stmt = $con->prepare("INSERT INTO reservations 
+                    (customer_package_id, event_date, down_payment, refund, refund_img, refund_proof, 
+                    downpayment_price, balance, status, event_type, event_theme, venue, start_time, end_time, 
+                    created_at, updated_at) 
+                    VALUES (?, ?, NULL, 0, NULL, NULL, ?, ?, 'pending', ?, ?, ?, ?, ?, NOW(), NOW())");
+
+                if (!$stmt) {
+                    die("Prepare failed (reservations): " . $con->error);
+                }
+
+                $stmt->bind_param("issssssss", 
+                    $customer_package_id, $event_date, $downpayment_price, $discounted_price,
+                    $event_type, $event_theme, $event_venue, $start_time, $end_time
+                );
+
+                if (!$stmt->execute()) {
+                    die("Execution failed (reservations): " . $stmt->error);
+                }
+
+                $reservation_id = $con->insert_id;
+
+                $stmt->close();
+            
+                // Insert into used_coupons table
+                $stmt = $con->prepare("INSERT INTO used_coupons (customer_id, coupon_id, reservation_id, used_at) VALUES (?, ?, NOW())");
+                $stmt->bind_param("iii", $customer_id, $coupon_id, $reservation_id);
+                if (!$stmt->execute()) {
+                    die("Execution failed (used_coupons): " . $stmt->error);
                 }
             
                 // Apply the discount
@@ -113,46 +153,54 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_SESSION["user_id"]) && isse
         } else {
             $final_price = $package_price;
             $discounted_price = $final_price - $downpayment_price;
-        }
-        
 
-        // Insert into `customer_package_menu`
-        $stmt = $con->prepare("INSERT INTO customer_package_menu (customer_id, package_id, menu_id, created_at) VALUES (?, ?, ?, NOW())");
-        if (!$stmt) {
-            die("Prepare failed (customer_package_menu): " . $con->error);
-        }
+            // insert to the customer package menu table
+            $stmt = $con->prepare("INSERT INTO customer_package_menu (customer_id, package_id, menu_id, created_at) VALUES (?, ?, ?, NOW())");
+            if (!$stmt) {
+                die("Prepare failed (customer_package_menu): " . $con->error);
+            }
 
-        foreach ($menu_ids as $menu_id) {
-            $stmt->bind_param("iii", $customer_id, $package_id, $menu_id);
+            foreach ($menu_ids as $menu_id) {
+                $stmt->bind_param("iii", $customer_id, $package_id, $menu_id);
+                if (!$stmt->execute()) {
+                    die("Execution failed (customer_package_menu): " . $stmt->error);
+                }
+            }
+
+            $customer_package_id = $stmt->insert_id;
+            $stmt->close();
+
+            // Insert into `reservations`
+            $stmt = $con->prepare("INSERT INTO reservations 
+                (customer_package_id, event_date, down_payment, refund, refund_img, refund_proof, 
+                downpayment_price, balance, status, event_type, event_theme, venue, start_time, end_time, 
+                created_at, updated_at) 
+                VALUES (?, ?, NULL, 0, NULL, NULL, ?, ?, 'pending', ?, ?, ?, ?, ?, NOW(), NOW())");
+
+            if (!$stmt) {
+                die("Prepare failed (reservations): " . $con->error);
+            }
+
+            $stmt->bind_param("issssssss", 
+                $customer_package_id, $event_date, $downpayment_price, $discounted_price,
+                $event_type, $event_theme, $event_venue, $start_time, $end_time
+            );
+
             if (!$stmt->execute()) {
-                die("Execution failed (customer_package_menu): " . $stmt->error);
+                die("Execution failed (reservations): " . $stmt->error);
+            }
+
+            $reservation_id = $con->insert_id;
+
+            $stmt->close();
+        
+            // Insert into used_coupons table
+            $stmt = $con->prepare("INSERT INTO used_coupons (customer_id, coupon_id, reservation_id, used_at) VALUES (?, ?, NOW())");
+            $stmt->bind_param("iii", $customer_id, $coupon_id, $reservation_id);
+            if (!$stmt->execute()) {
+                die("Execution failed (used_coupons): " . $stmt->error);
             }
         }
-
-        $customer_package_id = $stmt->insert_id;
-        $stmt->close();
-
-        // Insert into `reservations`
-        $stmt = $con->prepare("INSERT INTO reservations 
-            (customer_package_id, event_date, down_payment, refund, refund_img, refund_proof, 
-            downpayment_price, balance, status, event_type, event_theme, venue, start_time, end_time, 
-            created_at, updated_at) 
-            VALUES (?, ?, NULL, 0, NULL, NULL, ?, ?, 'pending', ?, ?, ?, ?, ?, NOW(), NOW())");
-
-        if (!$stmt) {
-            die("Prepare failed (reservations): " . $con->error);
-        }
-
-        $stmt->bind_param("issssssss", 
-            $customer_package_id, $event_date, $downpayment_price, $discounted_price,
-            $event_type, $event_theme, $event_venue, $start_time, $end_time
-        );
-
-        if (!$stmt->execute()) {
-            die("Execution failed (reservations): " . $stmt->error);
-        }
-
-        $stmt->close();
 
         
         $mail = new PHPMailer(true);

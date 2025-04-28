@@ -31,6 +31,7 @@ $count_result = $count_stmt->get_result();
 $total_records = $count_result->fetch_assoc()['total'];
 $total_pages = ceil($total_records / $limit);
 
+// Prepare the SQL query first
 $sql = "SELECT 
             r.id AS reservation_id,
             cpm.id AS customer_package_id,
@@ -57,11 +58,43 @@ $sql = "SELECT
         WHERE c.id = ? 
         ORDER BY r.event_date DESC";
 
-
+// Prepare the statement
 $stmt = $con->prepare($sql);
-$stmt->bind_param("i", $user_id); 
-$stmt->execute();
-$result = $stmt->get_result();
+$stmt->bind_param("i", $user_id);  // Bind the user ID
+$stmt->execute();  // Execute the query
+$result = $stmt->get_result();  // Get the result
+
+$reservations = [];
+
+while ($row = $result->fetch_assoc()) {
+    $resId = $row['reservation_id'];
+
+    if (!isset($reservations[$resId])) {
+        $reservations[$resId] = [
+            'customer_name' => $row['customer_name'],
+            'package_name' => $row['package_name'],
+            'venue' => $row['venue'],
+            'people_count' => $row['people_count'],
+            'event_date' => $row['event_date'],
+            'package_price' => $row['package_price'],
+            'downpayment_price' => $row['downpayment_price'],
+            'balance' => $row['balance'],
+            'status' => $row['status'],
+            'reservation_id' => $row['reservation_id'],
+            'down_payment' => $row['down_payment'],
+            'refund_img' => $row['refund_img'],
+            'menus' => []
+        ];
+    }
+
+    $reservations[$resId]['menus'][] = [
+        'name' => $row['menu_name'],
+        'description' => $row['menu_description'],
+        'category' => $row['menu_category'],
+        'image' => $row['menu_image']
+    ];
+}
+
 ?>
 
 
@@ -283,49 +316,50 @@ $result = $stmt->get_result();
                     </tr>
                 </thead>
                 <tbody>
-                <?php if ($result->num_rows > 0): ?>
-            <?php while ($row = $result->fetch_assoc()): ?>
-                <tr>
-                    <td><?= htmlspecialchars($row['customer_name']) ?></td>
-                    <td><?= htmlspecialchars($row['package_name']) ?></td>
-                    <td><?= htmlspecialchars($row['venue']) ?></td>
-                    <td><?= htmlspecialchars($row['people_count']) ?></td>
-                    <td><?= htmlspecialchars($row['event_date']) ?></td>
-                    <td><?= htmlspecialchars($row['package_price']) ?></td>
-                    <td><?= htmlspecialchars($row['downpayment_price']) ?></td>
-                    <td><?= htmlspecialchars($row['balance']) ?></td>
-                    <td><?= htmlspecialchars($row['status']) ?></td>
-                    <td>
-                        <button class="btn btn-success btn-sm view-btn"
-                            data-customer="<?= htmlspecialchars($row['customer_name']) ?>"
-                            data-id="<?= htmlspecialchars($row['reservation_id']) ?>"
-                            data-package="<?= htmlspecialchars($row['package_name']) ?>"
-                            data-venue="<?= htmlspecialchars($row['venue']) ?>"
-                            data-event-date="<?= htmlspecialchars($row['event_date']) ?>"
-                            data-price="<?= htmlspecialchars($row['package_price']) ?>"
-                            data-downpayment_price="<?= htmlspecialchars($row['downpayment_price']) ?>"
-                            data-status="<?= htmlspecialchars($row['status']) ?>"
-                            data-downpayment="<?= htmlspecialchars($row['down_payment']) ?>"
-                            data-balance="<?= htmlspecialchars($row['balance']) ?>"
-                            data-refund-image="<?= htmlspecialchars($row['refund_img']) ?>">
-                            View
-                        </button>
-                        
-                        <?php if ($row['status'] == 'pending'): ?>
-                            <form method="POST" action="update_status.php" style="display:inline;">
-                                <input type="hidden" name="reservationId" value="<?= htmlspecialchars($row['reservation_id']) ?>">
-                                <input type="hidden" name="status" value="cancelled">
-                                <button type="submit" class="btn btn-danger btn-sm">Cancel</button>
-                            </form>
-                        <?php else: ?>
-                            <button class="btn btn-danger ml-1 btn-sm" disabled>Cancel</button>
-                        <?php endif; ?>
-                    </td>
-                </tr>
-            <?php endwhile; ?>
-        <?php else: ?>
-            <tr><td colspan="9" class="text-center">No records found</td></tr>
-        <?php endif; ?>
+                <?php if (count($reservations) > 0): ?>
+                    <?php foreach ($reservations as $reservation): ?>
+                        <tr>
+                            <td><?= htmlspecialchars($reservation['customer_name']) ?></td>
+                            <td><?= htmlspecialchars($reservation['package_name']) ?></td>
+                            <td><?= htmlspecialchars($reservation['venue']) ?></td>
+                            <td><?= htmlspecialchars($reservation['people_count']) ?></td>
+                            <td><?= htmlspecialchars($reservation['event_date']) ?></td>
+                            <td><?= htmlspecialchars($reservation['package_price']) ?></td>
+                            <td><?= htmlspecialchars($reservation['downpayment_price']) ?></td>
+                            <td><?= htmlspecialchars($reservation['balance']) ?></td>
+                            <td><?= htmlspecialchars($reservation['status']) ?></td>
+                            <td>
+                                <button class="btn btn-success btn-sm view-btn"
+                                    data-customer="<?= htmlspecialchars($reservation['customer_name']) ?>"
+                                    data-id="<?= htmlspecialchars($reservation['reservation_id']) ?>"
+                                    data-package="<?= htmlspecialchars($reservation['package_name']) ?>"
+                                    data-venue="<?= htmlspecialchars($reservation['venue']) ?>"
+                                    data-event-date="<?= htmlspecialchars($reservation['event_date']) ?>"
+                                    data-price="<?= htmlspecialchars($reservation['package_price']) ?>"
+                                    data-downpayment_price="<?= htmlspecialchars($reservation['downpayment_price']) ?>"
+                                    data-status="<?= htmlspecialchars($reservation['status']) ?>"
+                                    data-downpayment="<?= htmlspecialchars($reservation['down_payment']) ?>"
+                                    data-balance="<?= htmlspecialchars($reservation['balance']) ?>"
+                                    data-refund-image="<?= htmlspecialchars($reservation['refund_img']) ?>"
+                                    data-menus='<?= htmlspecialchars(json_encode($reservation['menus'])) ?>'>
+                                    View
+                                </button>
+
+                                <?php if ($reservation['status'] == 'pending'): ?>
+                                    <form method="POST" action="update_status.php" style="display:inline;">
+                                        <input type="hidden" name="reservationId" value="<?= htmlspecialchars($reservation['reservation_id']) ?>">
+                                        <input type="hidden" name="status" value="cancelled">
+                                        <button type="submit" class="btn btn-danger btn-sm">Cancel</button>
+                                    </form>
+                                <?php else: ?>
+                                    <button class="btn btn-danger ml-1 btn-sm" disabled>Cancel</button>
+                                <?php endif; ?>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <tr><td colspan="10" class="text-center">No records found</td></tr>
+                <?php endif; ?>
                 </tbody>
 
             </table>
@@ -376,6 +410,10 @@ $result = $stmt->get_result();
                                 <tr>
                                     <th>Package Price</th>
                                     <td id="modalPrice"></td>
+                                </tr>
+                                <tr>
+                                <th>Menus</th>
+                                    <td id="modalMenus"></td>
                                 </tr>
                                 <tr>
                                     <th>Status</th>
@@ -475,92 +513,103 @@ $result = $stmt->get_result();
     <script src="../admin//dashboard/js/demo/chart-pie-demo.js"></script>
     <script src="../admin//dashboard/js/demo/chart-bar-demo.js"></script>
     <script src="../admin//dashboard/js/demo/datatables-demo.js"></script>  
-    <script>
-        $(document).ready(function () {
-            $(".view-btn").click(function () {
-                // Get data attributes from the button
-                let customer = $(this).data("customer");
-                let reservationId = $(this).data("id");
-                let package = $(this).data("package");
-                let venue = $(this).data("venue");
-                let eventDate = $(this).data("event-date");
-                let price = $(this).data("price");
-                let downpayment_price = $(this).data("downpayment_price");
-                let status = $(this).data("status");
-                let downpayment = $(this).data("downpayment");
-                let balance = $(this).data("balance");
-                let refund = $(this).data("refund-image");
+<script>
+    $(document).ready(function () {
+        $(".view-btn").click(function () {
+            let customer = $(this).data("customer");
+            let reservationId = $(this).data("id");
+            let package = $(this).data("package");
+            let venue = $(this).data("venue");
+            let eventDate = $(this).data("event-date");
+            let price = $(this).data("price");
+            let downpayment_price = $(this).data("downpayment_price");
+            let status = $(this).data("status");
+            let downpayment = $(this).data("downpayment");
+            let balance = $(this).data("balance");
+            let refund = $(this).data("refund-image");
+            let menus = $(this).data("menus");
 
-                // Set modal content
-                $("#modalCustomer").text(customer);
-                $("#modalId").val(reservationId);
-                $("#modalPackage").text(package);
-                $("#modalVenue").text(venue);
-                $("#modalEventDate").text(eventDate);
-                $("#modalPrice").text(price);
-                $("#modalStatus").text(status);
-                $("#modalDownpayment").text(downpayment_price);
-                $("#modalBalance").text(balance);
-                $("#modalRefund").text(refund);
+            // Set modal content
+            $("#modalCustomer").text(customer);
+            $("#modalId").val(reservationId);
+            $("#modalPackage").text(package);
+            $("#modalVenue").text(venue);
+            $("#modalEventDate").text(eventDate);
+            $("#modalPrice").text(price);
+            $("#modalStatus").text(status);
+            $("#modalDownpayment").text(downpayment_price);
+            $("#modalBalance").text(balance);
+            $("#modalRefund").text(refund);
 
-                console.log(refund);
+            let menuHtml = "<ul class='pl-3'>";
+            if (menus && Array.isArray(menus) && menus.length > 0) {
+                menus.forEach(menu => {
+                    menuHtml += `
+                        <li>
+                            <strong>${menu.name}</strong> 
+                        </li>
+                    `;
+                });
+                menuHtml += "</ul>";
+            } else {
+                menuHtml = "<em>No menus provided.</em>";
+            }
+            $("#modalMenus").html(menuHtml);
 
-                // Handle Downpayment Section
-                let downpaymentRow = $("#downpaymentRow");
-                let downpaymentRefund = $("#RefundRow");
-                let Refund = $("#modalRefund");
-                let downpaymentContent = $("#downpaymentContent");
-                console.log("Downpayment Image Path:", downpayment);
-                console.log("Refund Image Path:", refund);
+            // Handle Downpayment Section
+            let downpaymentRow = $("#downpaymentRow");
+            let downpaymentRefund = $("#RefundRow");
+            let Refund = $("#modalRefund");
+            let downpaymentContent = $("#downpaymentContent");
 
-
-                if (status === "pending") {
-                    downpaymentRefund.hide();
-                    downpaymentRow.show();
-                    downpaymentContent.html(`
+            if (status === "pending") {
+                downpaymentRefund.hide();
+                downpaymentRow.show();
+                downpaymentContent.html(`
                     <img src="${downpayment}" alt="Downpayment Receipt" class="img-fluid" style="max-width: 300px;">
-                        <form action="./upload_downpayment.php" method="post" enctype="multipart/form-data">
-                            <input type="hidden" name="id" value="${reservationId}">
-                            <input type="file" name="downpayment" id="downpayment">
-                            <input type="submit" value="Submit" class="btn btn-sm btn-success">
-                        </form> <br>
-                    `);
-                } else if (status === "approved" || status === "completed") {
-                    downpaymentRefund.hide();
-                    downpaymentRow.show();
-                    downpaymentContent.html(`
-                        <img src="${downpayment}" alt="Downpayment Receipt" class="img-fluid" style="max-width: 300px;">
-                    `);
-                } else if (status === "cancelled") {
-                    downpaymentRow.show();
-                    downpaymentContent.html(`
-                        <img src="${downpayment}" alt="Downpayment Receipt" class="img-fluid" style="max-width: 300px;">
-                    `); 
-                    downpaymentRow.show();
-                    Refund.html(`
+                    <form action="./upload_downpayment.php" method="post" enctype="multipart/form-data">
+                        <input type="hidden" name="id" value="${reservationId}">
+                        <input type="file" name="downpayment" id="downpayment">
+                        <input type="submit" value="Submit" class="btn btn-sm btn-success">
+                    </form> <br>
+                `);
+            } else if (status === "approved" || status === "completed") {
+                downpaymentRefund.hide();
+                downpaymentRow.show();
+                downpaymentContent.html(`
+                    <img src="${downpayment}" alt="Downpayment Receipt" class="img-fluid" style="max-width: 300px;">
+                `);
+            } else if (status === "cancelled") {
+                downpaymentRow.show();
+                downpaymentContent.html(`
+                    <img src="${downpayment}" alt="Downpayment Receipt" class="img-fluid" style="max-width: 300px;">
+                `); 
+                downpaymentRefund.show();
+                Refund.html(`
                     <img src="${refund}" alt="Refund account" class="img-fluid" style="max-width: 300px;">
-                        <form action="./upload_refund.php" method="post" enctype="multipart/form-data">
-                            <input type="hidden" name="id" value="${reservationId}">
-                            <input type="file" name="refund" id="refund">
-                            <input type="submit" value="Submit" class="btn btn-sm btn-success">
-                        </form> <br>
-                    `);
-                } else if (status === "refunded") {
-                    downpaymentRow.show();
-                    downpaymentContent.html(`
-                        <img src="${downpayment}" alt="Downpayment Receipt" class="img-fluid" style="max-width: 300px;">
-                    `); 
-                    downpaymentRow.show();
-                    Refund.html(`
+                    <form action="./upload_refund.php" method="post" enctype="multipart/form-data">
+                        <input type="hidden" name="id" value="${reservationId}">
+                        <input type="file" name="refund" id="refund">
+                        <input type="submit" value="Submit" class="btn btn-sm btn-success">
+                    </form> <br>
+                `);
+            } else if (status === "refunded") {
+                downpaymentRow.show();
+                downpaymentContent.html(`
+                    <img src="${downpayment}" alt="Downpayment Receipt" class="img-fluid" style="max-width: 300px;">
+                `); 
+                downpaymentRefund.show();
+                Refund.html(`
                     <img src="${refund}" alt="Refund account" class="img-fluid" style="max-width: 300px;">
-                    `);
-                }
+                `);
+            }
 
-                // Show modal
-                $("#viewModal").modal("show");
-            });
+            // Show modal
+            $("#viewModal").modal("show");
         });
-    </script>
+    });
+</script>
+
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
